@@ -1,1 +1,1 @@
-# Discord.Net Saber Bot
+# Discord.Net SaberBot

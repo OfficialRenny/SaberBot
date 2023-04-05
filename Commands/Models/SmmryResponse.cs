@@ -10,7 +10,7 @@ namespace SaberBot.Commands.Models
     public class SmmryResponse
     {
         [JsonPropertyName("sm_api_message")]
-        public string Message { get; set;} = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         [JsonPropertyName("sm_api_character_count")]
         public int CharacterCount { get; set; } = 0;

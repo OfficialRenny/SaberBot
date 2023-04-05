@@ -12,6 +12,8 @@ namespace SaberBot.Core
         public static int StarterCurrency => int.Parse(ConfigurationManager.AppSettings["StarterCurrency"]);
 
         public static string CurPath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        public static ulong TestGuildId => ulong.Parse(ConfigurationManager.AppSettings["TestGuildId"]);
         public static DirectoryInfo TempDir
         {
             get

@@ -9,6 +9,7 @@ using SaberBot.Database;
 using System.Web;
 using RestSharp;
 using System.Reflection;
+using Discord.Interactions;
 
 namespace SaberBot
 {
@@ -33,6 +34,9 @@ namespace SaberBot
             var commandHandler = _service.GetRequiredService<CommandHandler>();
             await commandHandler.InstallCommandsAsync();
 
+            var interactionHandler = _service.GetRequiredService<InteractionHandler>();
+            await interactionHandler.SetupCommandsAsync();
+
             var logger = _service.GetRequiredService<Logger>();
 
             client.Ready += Ready;
@@ -55,7 +59,7 @@ namespace SaberBot
             };
             var commandConfig = new CommandServiceConfig
             {
-                DefaultRunMode = RunMode.Async,
+                DefaultRunMode = Discord.Commands.RunMode.Async,
                 LogLevel = LogSeverity.Info
             };
 
@@ -63,6 +67,12 @@ namespace SaberBot
             {
                 ApiKey = Config.GoogleApiKey,
                 ApplicationName = "SaberBot"
+            };
+
+            var interactionConfig = new InteractionServiceConfig 
+            {
+                LogLevel = LogSeverity.Info,
+                DefaultRunMode = Discord.Interactions.RunMode.Async,
             };
 
             var collection = new ServiceCollection()
@@ -73,8 +83,11 @@ namespace SaberBot
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton(commandConfig)
                 .AddSingleton<CommandService>()
+                .AddSingleton(interactionConfig)
+                .AddSingleton<InteractionService>()
                 .AddSingleton<Logger>()
                 .AddSingleton<CommandHandler>()
+                .AddSingleton<InteractionHandler>()
                 .AddSingleton(googleConfig)
                 .AddScoped<YouTubeService>()
                 .AddSingleton<AudioService>();

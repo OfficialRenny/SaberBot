@@ -32,54 +32,9 @@ namespace SaberBot.Commands
 
         [Command("blocky", true)]
         [Summary("Converts text to blocky text")]
-        public Task BlockyText(params string[] textToBlockify)
+        public Task BlockyText([Remainder] string textToBlockify)
         {
-            string fullString = "";
-
-            foreach (string word in textToBlockify)
-            {
-				foreach (char letter in word)
-                {
-                    string l = letter.ToString();
-                    if (Regex.IsMatch(l, "[a-z]", RegexOptions.IgnoreCase))
-                    {
-                        var rand = Helpers.Random.NextDouble();
-                        if (l.ToLower() == "a")
-                        {
-                            if (rand < 0.5)
-                            {
-                                fullString += ":a:";
-                            }
-                            else fullString += ":regional_indicator_a:";
-                        }
-                        else if (l.ToLower() == "b")
-                        {
-                            if (rand < 0.5)
-                            {
-                                fullString += ":b:";
-                            }
-                            else fullString += ":regional_indicator_b:";
-                        }
-                        else
-                        {
-                            fullString += $":regional_indicator_{l.ToLower()}:";
-                        }
-                    }
-                    else if (Regex.IsMatch(l, "[0-9]"))
-                    {
-                        int i = int.Parse(l);
-                        if (int.TryParse(l, out i))
-                            fullString += $":{Helpers.NumStringArray[i]}:";
-                    }
-                    else
-                    {
-                        fullString += $"{l}";
-                    }
-                }
-                fullString += "  ";
-            }
-            
-            return ReplyAsync(fullString);
+            return ReplyAsync(Helpers.StringToRegionalIndicators(textToBlockify));
         }
 
         [Command("chance")]

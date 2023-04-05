@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SaberBot.Database;
 using SaberBot.Database.Models;
+using Discord.Interactions;
 
 namespace SaberBot.Core
 {
@@ -30,7 +31,7 @@ namespace SaberBot.Core
         {
             _client.MessageReceived += HandleCommandAsync;
 
-            await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(),
+            var addedModules = await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(),
                                             services: _services);
         }
 
@@ -55,13 +56,16 @@ namespace SaberBot.Core
                 message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
                 var context = new SocketCommandContext(_client, message);
-                await _commands.ExecuteAsync(
+                var commandResult = await _commands.ExecuteAsync(
                     context: context,
                     argPos: argPos,
                     services: _services);
 
-                user.IncrementCommandsExecuted();
-                _dbProvider.SaveChanges();
+                if (commandResult.IsSuccess)
+                {
+                    user.IncrementCommandsExecuted();
+                    _dbProvider.SaveChanges();
+                }
             }
         }
     }

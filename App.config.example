@@ -9,6 +9,7 @@
     <add key="GoogleApiKey" value=""/>
     <add key="SmmryKey" value="" />
     <add key="StarterCurrency" value="250" />
+    <add key="TestGuildId" value=""/>
   </appSettings>
 
   <connectionStrings>

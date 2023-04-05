@@ -6,9 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NAudio;
-using NAudio.Wave;
-
+using System.Text.RegularExpressions;
 
 namespace SaberBot.Core
 {
@@ -47,6 +45,56 @@ namespace SaberBot.Core
         public static readonly string[] NumEmojiArray = {
             "1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"
         };
+
+        public static string StringToRegionalIndicators(string input)
+        {
+            string fullString = "";
+
+            foreach (string word in input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                foreach (char letter in word)
+                {
+                    string l = letter.ToString();
+                    if (Regex.IsMatch(l, "[a-z]", RegexOptions.IgnoreCase))
+                    {
+                        var rand = Helpers.Random.NextDouble();
+                        if (l.ToLower() == "a")
+                        {
+                            if (rand < 0.5)
+                            {
+                                fullString += ":a:";
+                            }
+                            else fullString += ":regional_indicator_a:";
+                        }
+                        else if (l.ToLower() == "b")
+                        {
+                            if (rand < 0.5)
+                            {
+                                fullString += ":b:";
+                            }
+                            else fullString += ":regional_indicator_b:";
+                        }
+                        else
+                        {
+                            fullString += $":regional_indicator_{l.ToLower()}:";
+                        }
+                    }
+                    else if (Regex.IsMatch(l, "[0-9]"))
+                    {
+                        int i = int.Parse(l);
+                        if (int.TryParse(l, out i))
+                            fullString += $":{Helpers.NumStringArray[i]}:";
+                    }
+                    else
+                    {
+                        fullString += $"{l}";
+                    }
+                }
+                fullString += "  ";
+            }
+
+            return fullString;
+        }
 
         public static IEnumerable<int> DiceRoll(int dieSize, int diceToRoll = 1)
         {
