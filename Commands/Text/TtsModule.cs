@@ -1,9 +1,9 @@
 ﻿using Azure.Core;
 using Discord;
 using Discord.Audio;
-using Discord.Interactions;
+using Discord.Commands;
 using Discord.WebSocket;
-using SaberBot.Core;
+using SaberBot.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,64 +13,46 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands
+namespace SaberBot.Commands.Text
 {
-    [Group("tts", "Text-to-speech using DecTalk")]
-    public class TtsInteractionModule : InteractionModuleBase<SocketInteractionContext>
+    [Group("tts")]
+    public class TtsModule : ModuleBase<SocketCommandContext>
     {
         private readonly AudioService _service;
         private readonly HttpClient _httpClient;
 
-        public TtsInteractionModule(AudioService service, HttpClient httpClient) 
+        public TtsModule(AudioService service, HttpClient httpClient)
         {
             _service = service;
             _httpClient = httpClient;
         }
 
-        [SlashCommand("join", "Join voice channel.", runMode: RunMode.Async)]
-        public async Task JoinChannel(IVoiceChannel channel = null)
+        [Command("join", RunMode = RunMode.Async)]
+        public async Task JoinChannel(IVoiceChannel? channel = null)
         {
-            await DeferAsync(true);
+            var vc = await GetVoiceChannel(channel);
 
-            IVoiceChannel? vc = GetVoiceChannel(channel);
-
-            if (vc == null)
-            {
-                await FollowupAsync("You must be in a voice channel to use this command.", ephemeral: true);
-                return;
-            }
-            
-            await _service.JoinAudio(Context.Guild, vc);
-
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            if (vc != null)
+                await _service.JoinAudio(Context.Guild, vc);
         }
 
-        [SlashCommand("leave", "Leave current voice channel.", runMode: RunMode.Async)]
+        [Command("leave", RunMode = RunMode.Async)]
         public async Task LeaveChannel()
         {
-            await DeferAsync(true);
             await _service.LeaveAudio(Context.Guild);
-            
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
         }
 
-        [SlashCommand("stop", "Interrupt the bot and stop playing audio.", runMode: RunMode.Async)]
-        public async Task Stop()
+        [Command("stop", RunMode = RunMode.Async)]
+        public Task Stop()
         {
-            await DeferAsync(true);
             _service.StopAudioAsync(Context.Guild);
-
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            return Task.CompletedTask;
         }
 
-        [SlashCommand("say", "Says something with TTS.", runMode: RunMode.Async)]
-        public async Task Say(string text)
+        [Command("say", RunMode = RunMode.Async)]
+        [Summary("Says something with TTS.")]
+        public Task Say([Remainder] string text)
         {
-            await DeferAsync(true);
-
             var speechTask = Task.Run(async () =>
             {
                 string speech = "";
@@ -86,7 +68,8 @@ namespace SaberBot.Commands
                     {
                         speech = await resp.Content.ReadAsStringAsync();
                     }
-                } else
+                }
+                else
                 {
                     speech = text;
                 }
@@ -107,16 +90,24 @@ namespace SaberBot.Commands
                         await _service.SendAudioAsync(Context.Guild, Context.Channel, ms);
                     }
                 }
+
+                return;
             });
 
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            return speechTask;
         }
 
-        public IVoiceChannel? GetVoiceChannel(IVoiceChannel? channel = null)
+        public async Task<IVoiceChannel?> GetVoiceChannel(IVoiceChannel? channel = null)
         {
             // Get the audio channel
-            return channel ?? (Context.User as IGuildUser)?.VoiceChannel;
+            channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
+            if (channel == null) 
+            { 
+                await Context.Message.ReplyAsync("User must be in a voice channel, or a voice channel must be passed as an argument.");
+                return null;
+            }
+
+            return channel;
         }
     }
 }

@@ -7,27 +7,29 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using SaberBot.Database;
-using SaberBot.Database.Models;
 using Discord.Interactions;
 using System.Reflection.Metadata;
 using Discord;
 using System.Diagnostics;
+using SaberBot.Database.Models.Profile;
+using SaberBot.Database.Providers;
 
-namespace SaberBot.Core
+namespace SaberBot.Core.Handlers
 {
     public class InteractionHandler
     {
         private readonly IServiceProvider _services;
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _interactionService;
-        private readonly DbProvider _dbProvider;
+        private readonly UserProfileProvider _userProfileProvider;
 
-        public InteractionHandler(IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, DbProvider dbProvider)
+        public InteractionHandler(IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, UserProfileProvider userProfileProvider)
         {
             _services = services;
             _interactionService = interactionService;
             _client = client;
-            _dbProvider = dbProvider;
+            
+            _userProfileProvider = userProfileProvider;
         }
 
         private async Task LogAsync(LogMessage log)
@@ -46,7 +48,7 @@ namespace SaberBot.Core
             _client.Ready += ReadyAsync;
             _interactionService.Log += LogAsync;
 
-            var addedModules = 
+            var addedModules =
                 await _interactionService.AddModulesAsync(
                     assembly: Assembly.GetEntryAssembly(),
                     services: _services);
@@ -56,9 +58,9 @@ namespace SaberBot.Core
 
         private async Task HandleInteractionAsync(SocketInteraction interaction)
         {
-            UserProfile user = _dbProvider.GetOrCreateUserProfile(interaction.User.Id);
+            UserProfile user = _userProfileProvider.GetUserProfile(interaction.User.Id);
             user.LastKnownDisplayName = interaction.User.Username;
-            _dbProvider.SaveChanges();
+            _userProfileProvider.Save();
 
             var context = new SocketInteractionContext(_client, interaction);
             var interactionResult = await _interactionService.ExecuteCommandAsync(
@@ -69,8 +71,8 @@ namespace SaberBot.Core
             if (interactionResult.IsSuccess)
             {
                 user.IncrementCommandsExecuted();
-                _dbProvider.SaveChanges();
-            }            
+                _userProfileProvider.Save();
+            }
         }
     }
 }

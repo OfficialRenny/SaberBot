@@ -1,4 +1,4 @@
-﻿using Discord.Interactions;
+﻿using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,30 +8,30 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Discord;
 
-namespace SaberBot.Commands
+namespace SaberBot.Commands.Text
 {
-    public class YoutubeInteractionModule : InteractionModuleBase<SocketInteractionContext>
+    public class YoutubeModule : ModuleBase<SocketCommandContext>
     {
         private readonly YouTubeService _youTubeService;
 
-        public YoutubeInteractionModule(YouTubeService service)
+        public YoutubeModule(YouTubeService service)
         {
             _youTubeService = service;
         }
 
-        [SlashCommand("yt", "YouTube search")]
-        public async Task Search(string searchTerm)
+        [Command("yt")]
+        [Summary("YouTube search")]
+        public Task Search(params string[] query)
         {
-            await DeferAsync();
+            var search = string.Join(" ", query);
 
-            await DoSearch(searchTerm);
+            return Search(search);
         }
 
-        [SlashCommand("rp2yt", "Does a youtube search for whatever you/someone else is currently listening to.")]
-        public async Task Rp2Yt(IUser? user = null)
+        [Command("rp2yt")]
+        [Summary("Does a youtube search for whatever you/someone else is currently listening to.")]
+        public Task Rp2Yt(IUser? user = null)
         {
-            await DeferAsync();
-
             user ??= Context.User;
 
             var musicPresences = user.Activities.Where(n => n.Type == ActivityType.Listening).ToList();
@@ -44,32 +44,34 @@ namespace SaberBot.Commands
                 {
                     SpotifyGame s = (SpotifyGame)cur;
                     songTitle = $"{string.Join(", ", s.Artists)} - {s.TrackTitle}";
-                } 
+                }
                 else
                 {
                     songTitle = cur.Details;
                 }
 
-                await DoSearch(songTitle);
+                return Search(songTitle);
             }
+
+            return Task.CompletedTask;
         }
 
-        public Task DoSearch(string search)
+        public Task Search(string search)
         {
             if (string.IsNullOrWhiteSpace(search))
-                return FollowupAsync("Task failed successfully. (Search was empty.)");
+                return Task.CompletedTask;
 
             SearchResource.ListRequest listRequest = _youTubeService.Search.List("snippet");
-            listRequest.MaxResults = 3;
+            listRequest.MaxResults = 1;
             listRequest.Q = search;
             listRequest.Type = "video";
 
             SearchListResponse resp = listRequest.Execute();
 
             if (resp.Items.Any())
-                return FollowupAsync($"https://youtube.com/watch?v={resp.Items.First().Id.VideoId}", ephemeral: false);
+                return ReplyAsync($"https://youtube.com/watch?v={resp.Items.First().Id.VideoId}");
             else
-                return FollowupAsync("Task failed successfully. (Couldn't find any search results for some reason...)");
+                return Task.CompletedTask;
         }
     }
 }

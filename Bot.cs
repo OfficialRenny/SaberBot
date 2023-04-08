@@ -10,26 +10,30 @@ using System.Web;
 using RestSharp;
 using System.Reflection;
 using Discord.Interactions;
+using SaberBot.Core.Handlers;
+using SaberBot.Core.Services;
+using SaberBot.Database.Providers;
 
 namespace SaberBot
 {
     public class Bot
     {
         private readonly IServiceProvider _service;
+        private readonly DiscordSocketClient _client;
 
         public Bot() 
         {
             _service = CreateProvider();
+            _client = _service.GetRequiredService<DiscordSocketClient>();
         }
 
         public static Task Main(string[] args) => new Bot().MainAsync();
         public async Task MainAsync()
         {
-            var client = _service.GetRequiredService<DiscordSocketClient>();
             var commands = _service.GetRequiredService<CommandService>();
 
-            await client.LoginAsync(TokenType.Bot, Config.DiscordToken);
-            await client.StartAsync();
+            await _client.LoginAsync(TokenType.Bot, Config.DiscordToken);
+            await _client.StartAsync();
 
             var commandHandler = _service.GetRequiredService<CommandHandler>();
             await commandHandler.InstallCommandsAsync();
@@ -39,14 +43,14 @@ namespace SaberBot
 
             var logger = _service.GetRequiredService<Logger>();
 
-            client.Ready += Ready;
+            _client.Ready += Ready;
 
             await Task.Delay(-1);
         }
 
         private async Task Ready()
         {
-            await Task.Run(() => { Console.WriteLine("Bot is ready!"); });
+            Console.WriteLine("Bot is ready!");          
         }
 
         static IServiceProvider CreateProvider()
@@ -55,7 +59,9 @@ namespace SaberBot
             {
                 LogGatewayIntentWarnings = true,
                 GatewayIntents = GatewayIntents.All,
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Info,
+                AlwaysDownloadUsers = true,
+                MessageCacheSize = 1024,
             };
             var commandConfig = new CommandServiceConfig
             {
@@ -77,7 +83,8 @@ namespace SaberBot
 
             var collection = new ServiceCollection()
                 .AddDbContext<Db>(ServiceLifetime.Transient)
-                .AddTransient<DbProvider>()
+                .AddTransient<UserProfileProvider>()
+                .AddTransient<GuildProvider>()
                 .AddSingleton<HttpClient>()
                 .AddSingleton(clientConfig)
                 .AddSingleton<DiscordSocketClient>()
@@ -90,7 +97,8 @@ namespace SaberBot
                 .AddSingleton<InteractionHandler>()
                 .AddSingleton(googleConfig)
                 .AddScoped<YouTubeService>()
-                .AddSingleton<AudioService>();
+                .AddSingleton<AudioService>()
+                .AddTransient<ItemService>();
 
             return collection.BuildServiceProvider();
         }

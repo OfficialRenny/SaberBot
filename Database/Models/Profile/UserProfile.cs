@@ -2,13 +2,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SaberBot.Database.Models
+namespace SaberBot.Database.Models.Profile
 {
     [Index(nameof(DiscordId), IsUnique = true)]
     public class UserProfile
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public ulong DiscordId { get; set; }
         public bool IsAdmin { get; set; }
@@ -22,7 +22,9 @@ namespace SaberBot.Database.Models
         [NotMapped]
         public int Level => GetLevel(Xp);
 
-        public virtual Inventory? Inventory { get; set; }
+        [ForeignKey(nameof(Inventory))]
+        public Guid InventoryId { get; set; }
+        public virtual Items.Inventory Inventory { get; set; } = new();
 
         public void IncrementMessagesSent()
         {
@@ -38,7 +40,7 @@ namespace SaberBot.Database.Models
 
         public static int GetLevel(int xp)
         {
-            return ((int)Math.Floor(Math.Max(1, CalculateLevel(xp))));
+            return (int)Math.Floor(Math.Max(1, CalculateLevel(xp)));
         }
 
         public static double CalculateLevel(int xp)

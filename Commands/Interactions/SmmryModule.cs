@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands
+namespace SaberBot.Commands.Interactions
 {
     public class SmmryCommandModule : ModuleBase<SocketCommandContext>
     {
@@ -55,7 +55,7 @@ namespace SaberBot.Commands
     {
         private readonly RestClient _client;
 
-        public SmmryInteractionModule (HttpClient httpClient)
+        public SmmryInteractionModule(HttpClient httpClient)
         {
             _client = new RestClient(httpClient, options: new RestClientOptions
             {

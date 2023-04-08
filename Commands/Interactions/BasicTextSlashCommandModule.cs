@@ -12,7 +12,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace SaberBot.Commands
+namespace SaberBot.Commands.Interactions
 {
     public class BasicTextSlashCommandModule : InteractionModuleBase<SocketInteractionContext>
     {
@@ -61,13 +61,13 @@ namespace SaberBot.Commands
         }
 
         [SlashCommand("ping", "Pong, check's the bots latency.")]
-        public async Task Pong() 
+        public async Task Pong()
             => await RespondAsync(text: $"Pong! Latency: {Context.Client.Latency}ms");
 
         [SlashCommand("uptime", "Check's the bots uptime.")]
         public Task Uptime()
         {
-            return RespondAsync($"I've been up since <t:{((int)(Process.GetCurrentProcess().StartTime.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds)}:R>.");
+            return RespondAsync($"I've been up since <t:{(int)(Process.GetCurrentProcess().StartTime.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds}:R>.");
         }
 
         [SlashCommand("roll", "Rolls dice.")]

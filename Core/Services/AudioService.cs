@@ -10,14 +10,14 @@ using Discord.Audio;
 using Discord.WebSocket;
 using SaberBot.Core.Models;
 
-namespace SaberBot.Core
+namespace SaberBot.Core.Services
 {
     public class AudioService
     {
         private readonly ConcurrentDictionary<ulong, AsyncAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, AsyncAudioClient>();
         private readonly Logger _logger;
 
-        public AudioService (Logger logger)
+        public AudioService(Logger logger)
         {
             _logger = logger;
         }
@@ -27,7 +27,7 @@ namespace SaberBot.Core
             AsyncAudioClient client;
             if (ConnectedChannels.TryGetValue(guild.Id, out client))
                 return;
-            
+
             if (target.Guild.Id != guild.Id)
                 return;
 
@@ -71,7 +71,7 @@ namespace SaberBot.Core
                 using (var pcmStream = await FfmpegConvertToPcmProcess(audioStream))
                 using (var stream = client.Client.CreatePCMStream(AudioApplication.Mixed))
                 {
-                    try 
+                    try
                     {
                         byte[] buffer = new byte[81920];
                         int read;
@@ -81,7 +81,8 @@ namespace SaberBot.Core
                         }
                         await _logger.LogAsync(new LogMessage(LogSeverity.Info, "SendAudioAsync", "Finished copying incoming stream to audio client stream"));
                     }
-                    finally { 
+                    finally
+                    {
                         await stream.FlushAsync();
                     }
                 }
@@ -91,7 +92,6 @@ namespace SaberBot.Core
         private async Task<Stream> FfmpegConvertToPcmProcess(Stream stream)
         {
             MemoryStream stdOutBuffer = new();
-
             StringBuilder sb = new StringBuilder();
 
             var result = await Cli

@@ -11,13 +11,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands
+namespace SaberBot.Commands.Text
 {
     public class BasicTextCommandModule : ModuleBase<SocketCommandContext>
     {
         [Command("id")]
         [Summary("Fetch either your own or a pinged user's ID")]
-        public Task Id (IUser? user = null)
+        public Task Id(IUser? user = null)
         {
             user ??= Context.User;
             return ReplyAsync($"{user.Username}'s ID is {user.Id}");
@@ -76,7 +76,7 @@ namespace SaberBot.Commands
         [Summary("Check's the bots uptime.")]
         public Task Uptime()
         {
-            return ReplyAsync($"I've been up since <t:{((int)(Process.GetCurrentProcess().StartTime.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds)}:R>.");
+            return ReplyAsync($"I've been up since <t:{(int)(Process.GetCurrentProcess().StartTime.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds}:R>.");
         }
 
         [Command("poll", true)]
@@ -105,7 +105,8 @@ namespace SaberBot.Commands
             if (hasRollCount && hasDieSize)
             {
                 return ReplyAsync($"You rolled {string.Join(", ", Helpers.DiceRoll(dieSize, timesToRoll))}.");
-            } else
+            }
+            else
             {
                 return ReplyAsync("Please choose a number of dice to roll. `SYNTAX: roll 1d20`.");
             }

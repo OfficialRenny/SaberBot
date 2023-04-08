@@ -5,21 +5,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SaberBot.Database.Models.Profile;
 
-namespace SaberBot.Database.Models
+namespace SaberBot.Database.Models.Items
 {
     public class Inventory
     {
         [Key]
-        public int Id { get; set; }
-
-        [ForeignKey(nameof(UserProfile))]
-        public int UserProfileId { get; set; }
+        public Guid Id { get; set; }
 
         public int Currency { get; set; } = 0;
+        public ICollection<OwnedItem> OwnedItems { get; set; } = new List<OwnedItem>();
 
-        public ICollection<InventoryItem> Items { get; set; } = new HashSet<InventoryItem>();
-
+        [InverseProperty("Inventory")]
         public virtual UserProfile UserProfile { get; set; }
     }
 }

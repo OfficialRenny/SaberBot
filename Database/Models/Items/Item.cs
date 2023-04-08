@@ -5,15 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Database.Models
+namespace SaberBot.Database.Models.Items
 {
-    public class ShopItem
+    public abstract class Item
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Price { get; set; } = 0;
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
     }
+
+    public class DiscordAward : Item { }
 }
