@@ -13,6 +13,7 @@ using Discord.Interactions;
 using SaberBot.Core.Handlers;
 using SaberBot.Core.Services;
 using SaberBot.Database.Providers;
+using YoutubeDLSharp.Options;
 
 namespace SaberBot
 {
@@ -98,6 +99,8 @@ namespace SaberBot
                 .AddSingleton(googleConfig)
                 .AddScoped<YouTubeService>()
                 .AddSingleton<AudioService>()
+                .AddSingleton<YoutubeDlService>()
+                .AddSingleton<FileUploaderService>()
                 .AddTransient<ItemService>();
 
             return collection.BuildServiceProvider();

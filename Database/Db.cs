@@ -16,6 +16,7 @@ namespace SaberBot.Database
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<CommandPrefix> CommandPrefixes { get; set; }
+        public DbSet<CachedFileUpload> CachedFileUploads { get; set; }
 
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<OwnedItem> OwnedInventoryItems { get; set; }

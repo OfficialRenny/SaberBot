@@ -38,9 +38,17 @@ namespace SaberBot.Core.Handlers
         private async Task ReadyAsync()
         {
             if (Debugger.IsAttached)
+            {
                 await _interactionService.RegisterCommandsToGuildAsync(Config.TestGuildId, true);
+            }
             else
+            {
+                var testGuild = _client.Guilds.FirstOrDefault(g => g.Id == Config.TestGuildId);
+                if (testGuild != null)
+                    await testGuild.DeleteApplicationCommandsAsync();
+
                 await _interactionService.RegisterCommandsGloballyAsync(true);
+            }
         }
 
         public async Task SetupCommandsAsync()

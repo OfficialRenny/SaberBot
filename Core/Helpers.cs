@@ -101,5 +101,16 @@ namespace SaberBot.Core
             while (diceToRoll-- > 0)
                 yield return Random.Next(1, dieSize + 1);
         }
+
+        public static IEnumerable<string> GetUrls(string input)
+        {
+            var urls = new List<string>();
+            var matches = Regex.Matches(input, @"(https?://[^\s]+)");
+            foreach (Match match in matches)
+            {
+                urls.Add(match.Value);
+            }
+            return urls;
+        }
     }
 }

@@ -47,7 +47,6 @@ namespace SaberBot.Commands.Interactions
             }
 
             var ownedItem = _itemService.GetOwnedItem(userProfile.DiscordId, baseItem.Id);
-
             if (ownedItem.Quantity < quantity)
             {
                 await d;
