@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CliWrap" Version="3.6.0" />
+    <PackageReference Include="Discord.Net" Version="3.10.0" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.60.0.2945" />
+    <PackageReference Include="RestSharp" Version="110.1.0" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.0.0-beta6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\.NET Playground\Saber.Common\Saber.Common.csproj" />
+    <ProjectReference Include="..\.NET Playground\Saber.Database\Saber.Database.csproj" />
+  </ItemGroup>
+
+</Project>

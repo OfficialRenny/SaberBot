@@ -362,6 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-lib/*
-Database/Migrations/*
-App.config
+Saber.Bot/lib/*
+Saber.Database/Migrations/*
+**/App.config
+**/appSettings.json
