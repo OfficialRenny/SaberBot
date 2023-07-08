@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
-using SaberBot.Core;
+using Saber.Bot.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Text
+namespace Saber.Bot.Commands.Text
 {
     public class BasicTextCommandModule : ModuleBase<SocketCommandContext>
     {

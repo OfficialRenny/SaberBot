@@ -8,7 +8,7 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Discord;
 
-namespace SaberBot.Commands.Text
+namespace Saber.Bot.Commands.Text
 {
     public class YoutubeModule : ModuleBase<SocketCommandContext>
     {

@@ -1,14 +1,14 @@
 ﻿using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using SaberBot.Database;
-using SaberBot.Database.Providers;
+using Saber.Database;
+using Saber.Database.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Attributes
+namespace Saber.Bot.Commands.Attributes
 {
     public class IsAdminAttribute : PreconditionAttribute
     {

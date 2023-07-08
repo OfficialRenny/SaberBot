@@ -2,15 +2,15 @@
 using Discord.Commands;
 using Discord.Interactions;
 using RestSharp;
-using SaberBot.Commands.Models;
-using SaberBot.Core;
+using Saber.Bot.Commands.Models;
+using Saber.Bot.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Interactions
+namespace Saber.Bot.Commands.Interactions
 {
     public class SmmryCommandModule : ModuleBase<SocketCommandContext>
     {

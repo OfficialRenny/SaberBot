@@ -11,10 +11,10 @@ using Discord.Interactions;
 using System.Reflection.Metadata;
 using Discord;
 using System.Diagnostics;
-using SaberBot.Database.Models.Profile;
-using SaberBot.Database.Providers;
+using Saber.Database.Models.Profile;
+using Saber.Database.Providers;
 
-namespace SaberBot.Core.Handlers
+namespace Saber.Bot.Core.Handlers
 {
     public class InteractionHandler
     {

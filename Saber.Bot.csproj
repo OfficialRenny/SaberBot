@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -19,20 +19,15 @@
     <PackageReference Include="CliWrap" Version="3.6.0" />
     <PackageReference Include="Discord.Net" Version="3.10.0" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.60.0.2945" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="RestSharp" Version="110.1.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
     <PackageReference Include="YoutubeDLSharp" Version="1.0.0-beta6" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\Migrations\" />
+    <ProjectReference Include="..\..\Saber.Common.Services\Saber.Common.Services.csproj" />
+    <ProjectReference Include="..\Saber.Common\Saber.Common.csproj" />
+    <ProjectReference Include="..\Saber.Database\Saber.Database.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using SaberBot.Database;
 using Discord.Interactions;
-using SaberBot.Database.Models.Profile;
-using SaberBot.Database.Providers;
+using Saber.Database.Models.Profile;
+using Saber.Database.Providers;
 using Discord;
 
-namespace SaberBot.Core.Handlers
+namespace Saber.Bot.Core.Handlers
 {
     public class CommandHandler
     {

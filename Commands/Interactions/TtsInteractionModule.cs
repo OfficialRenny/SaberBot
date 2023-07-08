@@ -3,7 +3,7 @@ using Discord;
 using Discord.Audio;
 using Discord.Interactions;
 using Discord.WebSocket;
-using SaberBot.Core.Services;
+using Saber.Bot.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Interactions
+namespace Saber.Bot.Commands.Interactions
 {
     [Group("tts", "Text-to-speech using DecTalk")]
     public class TtsInteractionModule : InteractionModuleBase<SocketInteractionContext>

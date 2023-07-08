@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Core
+namespace Saber.Bot.Core
 {
     public class Logger
     {

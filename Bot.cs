@@ -4,36 +4,42 @@ using Discord.WebSocket;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.DependencyInjection;
-using SaberBot.Core;
-using SaberBot.Database;
+using Saber.Common;
+using Saber.Database;
 using System.Web;
 using RestSharp;
 using System.Reflection;
 using Discord.Interactions;
-using SaberBot.Core.Handlers;
-using SaberBot.Core.Services;
-using SaberBot.Database.Providers;
+using Saber.Bot.Core.Handlers;
+using Saber.Common.Services;
+using Saber.Database.Providers;
 using YoutubeDLSharp.Options;
+using Saber.Common.AppSettings;
+using Microsoft.Extensions.Configuration;
 
-namespace SaberBot
+namespace Saber.Bot
 {
     public class Bot
     {
         private readonly IServiceProvider _service;
         private readonly DiscordSocketClient _client;
+        private readonly IConfiguration _config;
 
         public Bot() 
         {
             _service = CreateProvider();
             _client = _service.GetRequiredService<DiscordSocketClient>();
+            _config = _service.GetRequiredService<IConfiguration>();
         }
 
         public static Task Main(string[] args) => new Bot().MainAsync();
         public async Task MainAsync()
         {
+            var config = _service.GetRequiredService<IConfiguration>();
+
             var commands = _service.GetRequiredService<CommandService>();
 
-            await _client.LoginAsync(TokenType.Bot, Config.DiscordToken);
+            await _client.LoginAsync(TokenType.Bot, _config["DiscordToken"]);
             await _client.StartAsync();
 
             var commandHandler = _service.GetRequiredService<CommandHandler>();
@@ -56,6 +62,8 @@ namespace SaberBot
 
         static IServiceProvider CreateProvider()
         {
+            var globalConfig = JsonConfiguration.CreateConfigurationContainer();
+
             var clientConfig = new DiscordSocketConfig
             {
                 LogGatewayIntentWarnings = true,
@@ -72,7 +80,7 @@ namespace SaberBot
 
             var googleConfig = new BaseClientService.Initializer()
             {
-                ApiKey = Config.GoogleApiKey,
+                ApiKey = globalConfig["GoogleApiKey"],
                 ApplicationName = "SaberBot"
             };
 
@@ -83,6 +91,7 @@ namespace SaberBot
             };
 
             var collection = new ServiceCollection()
+                .AddSingleton(globalConfig)
                 .AddDbContext<Db>(ServiceLifetime.Transient)
                 .AddTransient<UserProfileProvider>()
                 .AddTransient<GuildProvider>()

@@ -1,15 +1,15 @@
 ﻿using Discord;
 using Discord.Interactions;
-using SaberBot.Commands.Attributes;
-using SaberBot.Database;
-using SaberBot.Database.Providers;
+using Saber.Bot.Commands.Attributes;
+using Saber.Database;
+using Saber.Database.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Interactions.Admin
+namespace Saber.Bot.Commands.Interactions.Admin
 {
     [RequireOwner(Group = "OwnerOrAdmin")]
     [IsAdmin(Group = "OwnerOrAdmin")]

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Core.Models
+namespace Saber.Bot.Core.Models
 {
     public class AsyncAudioClient
     {

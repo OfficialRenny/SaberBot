@@ -3,7 +3,7 @@ using Discord;
 using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
-using SaberBot.Core.Services;
+using Saber.Common.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Text
+namespace Saber.Bot.Commands.Text
 {
     [Group("tts")]
     public class TtsModule : ModuleBase<SocketCommandContext>

@@ -1,15 +1,15 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Microsoft.Extensions.DependencyInjection;
-using SaberBot.Core.Services;
-using SaberBot.Database;
+using Saber.Common.Services;
+using Saber.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Attributes
+namespace Saber.Bot.Commands.Attributes
 {
     public class ShopItemsAutocompleteHandler : AutocompleteHandler
     {

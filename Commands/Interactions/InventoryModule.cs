@@ -1,16 +1,16 @@
 ﻿using Discord;
 using Discord.Interactions;
-using SaberBot.Commands.Attributes;
-using SaberBot.Core.Services;
-using SaberBot.Database;
-using SaberBot.Database.Providers;
+using Saber.Bot.Commands.Attributes;
+using Saber.Bot.Core.Services;
+using Saber.Database;
+using Saber.Database.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Interactions
+namespace Saber.Commands.Interactions
 {
     [Group("inv", "Your SaberBot Inventory")]
     public class InventoryModule : InteractionModuleBase<SocketInteractionContext>

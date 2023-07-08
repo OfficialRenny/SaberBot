@@ -8,14 +8,15 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Discord;
 using YoutubeDLSharp;
-using SaberBot.Core.Services;
-using SaberBot.Core;
-using SaberBot.Database;
-using SaberBot.Database.Providers;
+using Saber.Common;
+using Saber.Common.Services;
+using Saber.Bot.Core;
+using Saber.Database;
+using Saber.Database.Providers;
 using System.IO;
 using System.Security.Policy;
 
-namespace SaberBot.Commands.Interactions
+namespace Saber.Bot.Commands.Interactions
 {
     public class YoutubeInteractionModule : InteractionModuleBase<SocketInteractionContext>
     {

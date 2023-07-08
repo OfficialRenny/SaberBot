@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace SaberBot.Commands.Models
+namespace Saber.Bot.Commands.Models
 {
     public class SmmryResponse
     {
