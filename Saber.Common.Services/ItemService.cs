@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DelegateDecompiler;
+using Microsoft.EntityFrameworkCore;
 using Saber.Database;
 using Saber.Database.Models.Items;
 using System;
@@ -23,7 +24,8 @@ namespace Saber.Common.Services
             return
                 _db.ShopItems
                 .Include(s => s.Item)
-                .Where(s => s.IsInStock);
+                .Where(s => s.IsInStock)
+                .Decompile();
         }
 
         public ShopItem? GetShopItem(string itemId)
@@ -49,34 +51,44 @@ namespace Saber.Common.Services
                 _db.OwnedInventoryItems
                 .Include(o => o.Inventory.UserProfile)
                 .Include(o => o.Item)
-                .Where(o => o.Inventory.UserProfile.DiscordId == discordId);
+                .Where(o => o.Inventory.UserProfile.DiscordId == discordId && o.Quantity > 0);
         }
 
-        public OwnedItem GetOwnedItem(ulong discordId, string itemId)
+        public OwnedItem? GetOwnedItem(ulong discordId, string itemId)
             => GetOwnedItem(discordId, new Guid(itemId));
 
-        public OwnedItem GetOwnedItem(ulong discordId, Guid itemId)
+        public OwnedItem? GetOwnedItem(ulong discordId, Guid itemId)
         {
             var ownedItem =
                 _db.OwnedInventoryItems
                 .Include(o => o.Inventory.UserProfile)
                 .Include(o => o.Item)
                 .FirstOrDefault(o => o.Inventory.UserProfile.DiscordId == discordId && o.Item.Id == itemId);
-
-            if (ownedItem == null)
-                ownedItem = CreateOwnedItem(discordId, itemId);
             
             return ownedItem;
         }
 
-        public void ModifyOwnedItem(ulong discordId, string itemId, Action<OwnedItem> action)
-            => ModifyOwnedItem(discordId, new Guid(itemId), action);
+        public OwnedItem GetOrCreateOwnedItem(ulong discordId, string itemId)
+            => GetOrCreateOwnedItem(discordId, new Guid(itemId));
 
-        public void ModifyOwnedItem(ulong discordId, Guid itemId, Action<OwnedItem> action)
+        public OwnedItem GetOrCreateOwnedItem(ulong discordId, Guid itemId)
         {
             var ownedItem = GetOwnedItem(discordId, itemId);
+            if (ownedItem == null)
+                ownedItem = CreateOwnedItem(discordId, itemId);
+            return ownedItem;
+        }
+
+        public OwnedItem ModifyOwnedItem(ulong discordId, string itemId, Action<OwnedItem> action)
+            => ModifyOwnedItem(discordId, new Guid(itemId), action);
+
+        public OwnedItem ModifyOwnedItem(ulong discordId, Guid itemId, Action<OwnedItem> action)
+        {
+            var ownedItem = GetOrCreateOwnedItem(discordId, itemId);
             action(ownedItem);
             _db.SaveChanges();
+
+            return ownedItem;
         }
 
         public OwnedItem CreateOwnedItem(ulong discordId, string itemId)

@@ -4,6 +4,7 @@ using Discord.Audio;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Saber.Common.Services;
+using Saber.Common.Services.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,7 +106,7 @@ namespace Saber.Bot.Commands.Interactions
                     {
                         MemoryStream ms = new MemoryStream(ttsRespBytes);
 
-                        await _service.SendAudioAsync(Context.Guild, Context.Channel, ms);
+                        await _service.SendAudioAsync(Context.Guild, Context.Channel, new Audio(ms));
                     }
                 }
             });

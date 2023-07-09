@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DelegateDecompiler;
 
 namespace Saber.Database.Models.Items
 {
@@ -18,6 +19,7 @@ namespace Saber.Database.Models.Items
         public bool IsInfinite { get; set; }
 
         [NotMapped]
+        [Computed]
         public bool IsInStock => Stock > 0 || IsInfinite;
 
         [ForeignKey(nameof(Item))]

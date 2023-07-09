@@ -37,7 +37,7 @@ namespace Saber.Common.Services
             if (!fileToSend.Exists)
                 throw new ArgumentException("Not a valid path.");
 
-            if (!fileToSend.FullName.Contains(_config.TempDir.FullName))
+            if (!fileToSend.FullName.StartsWith(_config.TempDir.FullName))
                 throw new ArgumentException("Unsafe file path submitted.");
 
             var request = new RestRequest("/upload", Method.Post);
