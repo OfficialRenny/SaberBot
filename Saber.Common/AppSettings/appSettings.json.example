@@ -1,0 +1,13 @@
+{
+  "DiscordToken": "",
+  "GoogleApiKey": "",
+  "SmmryKey": "",
+  "StarterCurrency": "250",
+  "TestGuildId": "",
+  "FileUploaderBaseUrl": "",
+  "FileUploaderToken": "",
+  "Database": {
+    "ConnectionString": ""
+  },
+  "TempDir": "temp/"
+}

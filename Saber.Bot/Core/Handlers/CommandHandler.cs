@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using SaberBot.Database;
+using Saber.Database;
 using Discord.Interactions;
 using Saber.Database.Models.Profile;
 using Saber.Database.Providers;

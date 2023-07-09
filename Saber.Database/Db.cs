@@ -15,8 +15,6 @@ namespace Saber.Database
 {
     public class Db : DbContext
     {
-        internal readonly IConfiguration Config;
-
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<CommandPrefix> CommandPrefixes { get; set; }
@@ -28,15 +26,8 @@ namespace Saber.Database
         public DbSet<ShopItem> ShopItems { get; set; }
         public DbSet<DiscordAward> DiscordAwards { get; set; }
 
-
-        public Db(IConfiguration config) : base()
+        public Db(DbContextOptions<Db> options) : base(options)
         {
-            Config = config;
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(Config["Database:ConnectionString"]);
         }
     }
 }

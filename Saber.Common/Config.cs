@@ -1,10 +1,27 @@
-﻿using System.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Saber.Common.AppSettings;
+using System.Configuration;
+using System.Dynamic;
 
 namespace Saber.Common
 {
-    public static class Config
+    public class Config
     {
-        public static DirectoryInfo TempDir
+        private readonly IConfiguration _config;
+        public Config()
+        {
+            _config = JsonConfiguration.CreateConfigurationContainer();
+        }
+
+        public string this[string key]
+        {
+            get
+            {
+                return _config[key];
+            }
+        }
+
+        public DirectoryInfo TempDir
         {
             get
             {

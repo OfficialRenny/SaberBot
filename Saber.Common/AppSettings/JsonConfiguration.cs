@@ -25,13 +25,13 @@ namespace Saber.Common.AppSettings
                     //WE ARE IN PROD !!
                     return ConfigurationContainer = new ConfigurationBuilder()
                         .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                        .AddJsonFile($"bin/AppSettings/appSettings.json").Build();
+                        .AddJsonFile($"AppSettings/appSettings.json").Build();
                 }
 
                 Console.WriteLine($"Setting up {environment} appsettings.");
                 return ConfigurationContainer = new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                    .AddJsonFile($"bin/AppSettings/appsettings-{environment}.json").Build();
+                    .AddJsonFile($"AppSettings/appsettings-{environment}.json").Build();
             }
             catch (Exception ex)
             {

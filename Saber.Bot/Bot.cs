@@ -16,6 +16,8 @@ using Saber.Database.Providers;
 using YoutubeDLSharp.Options;
 using Saber.Common.AppSettings;
 using Microsoft.Extensions.Configuration;
+using Saber.Bot.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Saber.Bot
 {
@@ -23,19 +25,19 @@ namespace Saber.Bot
     {
         private readonly IServiceProvider _service;
         private readonly DiscordSocketClient _client;
-        private readonly IConfiguration _config;
+        private readonly Config _config;
 
         public Bot() 
         {
             _service = CreateProvider();
             _client = _service.GetRequiredService<DiscordSocketClient>();
-            _config = _service.GetRequiredService<IConfiguration>();
+            _config = _service.GetRequiredService<Config>();
         }
 
         public static Task Main(string[] args) => new Bot().MainAsync();
         public async Task MainAsync()
         {
-            var config = _service.GetRequiredService<IConfiguration>();
+            var config = _service.GetRequiredService<Config>();
 
             var commands = _service.GetRequiredService<CommandService>();
 
@@ -62,7 +64,7 @@ namespace Saber.Bot
 
         static IServiceProvider CreateProvider()
         {
-            var globalConfig = JsonConfiguration.CreateConfigurationContainer();
+            var globalConfig = new Config();
 
             var clientConfig = new DiscordSocketConfig
             {
@@ -92,7 +94,8 @@ namespace Saber.Bot
 
             var collection = new ServiceCollection()
                 .AddSingleton(globalConfig)
-                .AddDbContext<Db>(ServiceLifetime.Transient)
+                .AddDbContext<Db>(options => options.UseSqlServer(globalConfig["Database:ConnectionString"]), ServiceLifetime.Transient)
+                .AddSingleton<LoggerService>()
                 .AddTransient<UserProfileProvider>()
                 .AddTransient<GuildProvider>()
                 .AddSingleton<HttpClient>()

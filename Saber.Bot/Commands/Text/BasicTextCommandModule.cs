@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Saber.Bot.Core;
+using Saber.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

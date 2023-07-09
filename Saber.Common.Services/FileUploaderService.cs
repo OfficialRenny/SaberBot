@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using Microsoft.Extensions.Configuration;
+using RestSharp;
 using Saber.Common.Services.Models;
 using Saber.Database;
 using Saber.Database.Providers;
@@ -12,16 +13,18 @@ namespace Saber.Common.Services
 {
     public class FileUploaderService
     {
+        private readonly Config _config;
         private readonly HttpClient _httpClient;
         private readonly RestClient _client;
         private readonly CachedFileProvider _cachedFileProvider;
 
-        public FileUploaderService(HttpClient httpClient, Db db)
+        public FileUploaderService(Config config, HttpClient httpClient, Db db)
         {
+            _config = config;
             _httpClient = httpClient;
             _client = new RestClient(httpClient, options: new RestClientOptions
             {
-                BaseUrl = new Uri(Config.FileUploaderBaseUrl),
+                BaseUrl = new Uri(_config["FileUploaderBaseUrl"]),
             });
 
             _cachedFileProvider = new CachedFileProvider(db);
@@ -34,11 +37,11 @@ namespace Saber.Common.Services
             if (!fileToSend.Exists)
                 throw new ArgumentException("Not a valid path.");
 
-            if (!fileToSend.FullName.Contains(Config.TempDir.FullName))
+            if (!fileToSend.FullName.Contains(_config.TempDir.FullName))
                 throw new ArgumentException("Unsafe file path submitted.");
 
             var request = new RestRequest("/upload", Method.Post);
-            request.AddParameter("token", Config.FileUploaderToken);
+            request.AddParameter("token", _config["FileUploaderToken"]);
             request.AddFile("upload", fileToSend.FullName, ContentType.FormUrlEncoded);
 
             try
@@ -59,7 +62,7 @@ namespace Saber.Common.Services
 
             foreach (var file in files)
             {
-                var deleteUrl = string.Join("/", file.UploadedUrl, "delete", Config.FileUploaderToken);
+                var deleteUrl = string.Join("/", file.UploadedUrl, "delete", _config["FileUploaderToken"]);
                 var request = await _httpClient.GetAsync(deleteUrl);
                 if (request.IsSuccessStatusCode)
                 {

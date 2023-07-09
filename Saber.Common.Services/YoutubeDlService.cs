@@ -9,12 +9,15 @@ namespace Saber.Common.Services
 {
     public class YoutubeDlService
     {
+        private readonly Config _config;
         private readonly YoutubeDL _youtubeDl;
 
-        public YoutubeDlService()
+        public YoutubeDlService(Config config)
         {
+            _config = config;
+
             _youtubeDl = new YoutubeDL(6);
-            _youtubeDl.OutputFolder = Config.TempDir.FullName;
+            _youtubeDl.OutputFolder = _config.TempDir.FullName;
         }
 
         public async IAsyncEnumerable<string> GetValidUrlsAsync(string message)

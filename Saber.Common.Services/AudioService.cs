@@ -15,9 +15,9 @@ namespace Saber.Common.Services
     public class AudioService
     {
         private readonly ConcurrentDictionary<ulong, AsyncAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, AsyncAudioClient>();
-        private readonly Logger _logger;
+        private readonly LoggerService _logger;
 
-        public AudioService(Logger logger)
+        public AudioService(LoggerService logger)
         {
             _logger = logger;
         }

@@ -3,7 +3,7 @@ using Discord;
 using Discord.Audio;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Saber.Bot.Core.Services;
+using Saber.Common.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;

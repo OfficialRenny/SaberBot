@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Saber.Common;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SaberBot.Commands.Interactions

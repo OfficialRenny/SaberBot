@@ -6,25 +6,28 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using SaberBot.Database;
+using Saber.Database;
 using Discord.Interactions;
 using System.Reflection.Metadata;
 using Discord;
 using System.Diagnostics;
 using Saber.Database.Models.Profile;
 using Saber.Database.Providers;
+using Saber.Common;
 
 namespace Saber.Bot.Core.Handlers
 {
     public class InteractionHandler
     {
+        private readonly Config _config;
         private readonly IServiceProvider _services;
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _interactionService;
         private readonly UserProfileProvider _userProfileProvider;
 
-        public InteractionHandler(IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, UserProfileProvider userProfileProvider)
+        public InteractionHandler(Config config, IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, UserProfileProvider userProfileProvider)
         {
+            _config = config;
             _services = services;
             _interactionService = interactionService;
             _client = client;
@@ -39,11 +42,11 @@ namespace Saber.Bot.Core.Handlers
         {
             if (Debugger.IsAttached)
             {
-                await _interactionService.RegisterCommandsToGuildAsync(Config.TestGuildId, true);
+                await _interactionService.RegisterCommandsToGuildAsync(Convert.ToUInt64(_config["TestGuildId"]), true);
             }
             else
             {
-                var testGuild = _client.Guilds.FirstOrDefault(g => g.Id == Config.TestGuildId);
+                var testGuild = _client.Guilds.FirstOrDefault(g => g.Id == Convert.ToUInt64(_config["TestGuildId"]));
                 if (testGuild != null)
                     await testGuild.DeleteApplicationCommandsAsync();
 

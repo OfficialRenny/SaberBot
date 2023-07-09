@@ -4,6 +4,7 @@ using Discord.Interactions;
 using RestSharp;
 using Saber.Bot.Commands.Models;
 using Saber.Bot.Core;
+using Saber.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,11 @@ namespace Saber.Bot.Commands.Interactions
 {
     public class SmmryCommandModule : ModuleBase<SocketCommandContext>
     {
+        private readonly Config _config;
         private readonly RestClient _client;
-        public SmmryCommandModule(HttpClient httpClient)
+        public SmmryCommandModule(Config config, HttpClient httpClient)
         {
+            _config = config;
             _client = new RestClient(httpClient, options: new RestClientOptions
             {
                 BaseUrl = new Uri("https://api.smmry.com"),
@@ -34,7 +37,7 @@ namespace Saber.Bot.Commands.Interactions
 
             object parameters = new
             {
-                SM_API_KEY = Config.SmmryKey,
+                SM_API_KEY = _config["SmmryKey"],
                 SM_URL = url,
                 SM_LENGTH = length,
             };
@@ -53,10 +56,13 @@ namespace Saber.Bot.Commands.Interactions
 
     public class SmmryInteractionModule : InteractionModuleBase<SocketInteractionContext>
     {
+        private readonly Config _config;
+
         private readonly RestClient _client;
 
-        public SmmryInteractionModule(HttpClient httpClient)
+        public SmmryInteractionModule(Config config, HttpClient httpClient)
         {
+            _config = config;
             _client = new RestClient(httpClient, options: new RestClientOptions
             {
                 BaseUrl = new Uri("https://api.smmry.com"),
@@ -80,7 +86,7 @@ namespace Saber.Bot.Commands.Interactions
 
             object parameters = new
             {
-                SM_API_KEY = Config.SmmryKey,
+                SM_API_KEY = _config["SmmryKey"],
                 SM_URL = url,
                 SM_LENGTH = length,
             };

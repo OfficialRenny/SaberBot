@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Saber.Bot.Commands.Attributes;
-using Saber.Bot.Core.Services;
+using Saber.Common.Services;
 using Saber.Database;
 using Saber.Database.Providers;
 using System;
