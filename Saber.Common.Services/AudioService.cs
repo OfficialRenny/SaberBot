@@ -8,6 +8,7 @@ using CliWrap.Buffered;
 using Discord;
 using Discord.Audio;
 using Discord.WebSocket;
+using Saber.Common.Services.Interfaces;
 using Saber.Common.Services.Models;
 
 namespace Saber.Common.Services
@@ -42,7 +43,7 @@ namespace Saber.Common.Services
             AsyncAudioClient client;
             if (ConnectedChannels.TryRemove(guild.Id, out client))
             {
-                client.PlaybackCancellationTokenSource.Cancel();
+                client.Stop(false);
                 await client.Client.StopAsync();
                 await _logger.Log(LogSeverity.Info, "AudioService", $"Disconnected from voice on {guild.Name}.");
             }
@@ -53,32 +54,37 @@ namespace Saber.Common.Services
             AsyncAudioClient client;
             if (ConnectedChannels.TryGetValue(guild.Id, out client))
             {
-                client.PlaybackCancellationTokenSource.Cancel();
-                client.PlaybackCancellationTokenSource = new CancellationTokenSource();
+                client.Stop();
             }
         }
 
-        public async Task SendAudioAsync(IGuild guild, IMessageChannel channel, Stream audioStream)
+        public async Task SendAudioAsync(IGuild guild, IMessageChannel channel, IAudio audio)
         {
             AsyncAudioClient client;
             if (ConnectedChannels.TryGetValue(guild.Id, out client))
             {
-                client.PlaybackCancellationTokenSource.Cancel();
-                client.PlaybackCancellationTokenSource = new CancellationTokenSource();
+                client.Stop();
 
                 await _logger.LogAsync(new LogMessage(LogSeverity.Info, "SendAudioAsync", $"Starting playback in {guild.Name}"));
 
-                using (var pcmStream = await FfmpegConvertToPcmProcess(audioStream))
+                using (var pcmStream = await FfmpegConvertToPcmProcess(audio.Stream))
                 using (var stream = client.Client.CreatePCMStream(AudioApplication.Mixed))
                 {
                     try
                     {
                         byte[] buffer = new byte[81920];
                         int read;
+                        audio.OnBegin();
                         while (!client.PlaybackCancellationTokenSource.IsCancellationRequested && (read = await pcmStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {
                             await stream.WriteAsync(buffer, 0, read, client.PlaybackCancellationTokenSource.Token);
                         }
+                        if (client.PlaybackCancellationTokenSource.IsCancellationRequested)
+                        {
+                            audio.OnCancel();
+                        }
+
+                        audio.OnFinished();
                         await _logger.LogAsync(new LogMessage(LogSeverity.Info, "SendAudioAsync", "Finished copying incoming stream to audio client stream"));
                     }
                     finally

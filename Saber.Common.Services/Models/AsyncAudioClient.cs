@@ -17,5 +17,12 @@ namespace Saber.Common.Services.Models
             Client = client;
             PlaybackCancellationTokenSource = new CancellationTokenSource();
         }
+
+        public void Stop(bool newTokenSource = true)
+        {
+            PlaybackCancellationTokenSource.Cancel();
+            if (newTokenSource)
+                PlaybackCancellationTokenSource = new CancellationTokenSource();
+        }
     }
 }
