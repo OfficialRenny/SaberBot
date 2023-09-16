@@ -1,0 +1,3454 @@
+openapi: 3.0.2
+info:
+  description: |
+    ## Documentation is under very slow and heavy development
+
+    This document will gradually be supplemented and updated over some extended period of time.
+
+    ## Unstable endpoints
+    Endpoint that is not stable and probably will be changed in the future will be marked with exclamation sign -> ⚠
+  title: Warframe.market API
+  version: 1.14.0
+servers:
+- description: Production server
+  url: "https://api.warframe.market/{apiVersion}"
+  variables:
+    apiVersion:
+      default: v1
+      description: Version of WFM API.
+      enum:
+      - v1
+tags:
+- description: "Login, Logout, Registration and password restoration."
+  name: Auth
+- description: Provides all information about common items data models.
+  name: Items
+- description: Profile and orders management.
+  name: Profile
+- description: Provides all information about lich data models.
+  name: Liches
+- description: Provide all information about sister data models.
+  name: Sisters
+- description: Provides all information about riven data models.
+  name: Rivens
+- description: Additional miscellaneous endpoints
+  name: Misc
+- description: "Search, popular, most recent and auction creation endpoints"
+  name: Auctions
+- description: Operations on a specific auction.
+  name: Auction Entry
+- description: Subscribe and unsubscribe from push-notifications.
+  name: Push notifications
+paths:
+  /items:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_items_get_200_response'
+          description: Succesfull
+          links:
+            GetItemInfoById:
+              description: ""
+              operationId: getItemInfo
+              parameters:
+                url_name: $response.body#/payload/items/1/url_name
+      summary: Get list of all tradable items.
+      tags:
+      - Items
+  /items/{url_name}:
+    get:
+      operationId: getItemInfo
+      parameters:
+      - description: url_name of an item
+        explode: false
+        in: path
+        name: url_name
+        required: true
+        schema:
+          example: mirage_prime_systems
+          type: string
+        style: simple
+      - description: |
+          Asks the server to return content for specified platform, default: `pc`.
+        explode: false
+        in: header
+        name: Platform
+        required: false
+        schema:
+          enum:
+          - xbox
+          - pc
+          - ps4
+          - switch
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getItemInfo_200_response'
+          description: Successful operation
+      summary: Gets information about an item
+      tags:
+      - Items
+  /items/{url_name}/orders:
+    get:
+      parameters:
+      - description: url_name of an item
+        explode: false
+        in: path
+        name: url_name
+        required: true
+        schema:
+          example: mirage_prime_systems
+          type: string
+        style: simple
+      - description: |
+          Asks the server to return content for specified platform, default: `pc`.
+        explode: false
+        in: header
+        name: Platform
+        required: false
+        schema:
+          enum:
+          - xbox
+          - pc
+          - ps4
+          - switch
+          type: string
+        style: simple
+      - description: |
+          Include additional information.
+          Will add a new response section with all information about requested model.
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          enum:
+          - item
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_items__url_name__orders_get_200_response'
+          description: "Successful operation, with `?include=item`"
+      summary: Get list of orders for a given item_id
+      tags:
+      - Items
+  /items/{url_name}/dropsources:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      - description: url_name of an item
+        explode: false
+        in: path
+        name: url_name
+        required: true
+        schema:
+          example: mirage_prime_systems
+          type: string
+        style: simple
+      - description: |
+          Include additional information.
+          Will add a new response section with all information about requested model.
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          enum:
+          - item
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_items__url_name__dropsources_get_200_response'
+          description: Successful operation
+      summary: Get dropsources for a given item
+      tags:
+      - Items
+  /profile/orders:
+    post:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/_profile_orders_post_request'
+        description: ""
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_profile_orders_post_200_response'
+          description: created
+      summary: Create an order
+      tags:
+      - Profile
+  /auth/signin:
+    post:
+      description: |
+        There is 2 ways to maintain authorization:
+        - Through Cookie for Web browsers.
+        - Through Header for other devices.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/_auth_signin_post_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/currentUser'
+          description: A JSON representation of currentUser
+          headers:
+            Set-Cookie:
+              description: "If you used auth_type`=`cookie`, for web-browser"
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Authorization:
+              description: "If you used auth_type`=`header`, for devices"
+              explode: false
+              schema:
+                type: string
+              style: simple
+      summary: Simple login.
+      tags:
+      - Auth
+  /auth/registration:
+    post:
+      description: "There is 2 types of registration, for web browser and for Android\
+        \ device. Android device could avoid to include reCaptha toke by using secret\
+        \ DeviceKey in the request headers."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/_auth_registration_post_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/currentUser'
+          description: A JSON representation of currentUser
+          headers:
+            Set-Cookie:
+              description: "If you used auth_type`=`cookie`, for web-browser"
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Authorization:
+              description: "If you used auth_type`=`header`, for devices"
+              explode: false
+              schema:
+                type: string
+              style: simple
+      summary: Registration of new user and their device.
+      tags:
+      - Auth
+  /auth/restore:
+    post:
+      description: "You will recieve mail with the new password, short after api call."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/_auth_restore_post_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                description: Empty object
+                type: object
+          description: Empty object
+      summary: Password restoration.
+      tags:
+      - Auth
+  /settings/notifications/push:
+    delete:
+      description: Unflag `subscribed` in our DB from currentUser.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_settings_notifications_push_post_200_response'
+          description: Successful operation
+      security:
+      - JWTHeader: []
+      - CookieAuth: []
+      summary: Push Unsubscribe
+      tags:
+      - Push notifications
+    get:
+      description: Not implemented
+      responses:
+        "200":
+          description: Nothing
+      security:
+      - JWTHeader: []
+      - CookieAuth: []
+      summary: Get subscription
+      tags:
+      - Push notifications
+    post:
+      description: |
+        There is 3 formats, for web for android
+
+
+        Web usage:
+        ---------
+        ```
+        {
+            'device': 'web'
+            'subscription':
+                {
+                "endpointeger":"https://fcm.googleapis.com/fcm/send/...",
+                "keys":{
+                    "p256dh":"BBya_RhGe...",
+                    "auth":"2PFoLO3K..."
+                    }
+                }
+        }
+        ```
+
+        Android usage:
+        ---------
+        ```
+          {
+            'device': 'android'
+            'subscription':
+                {
+                "push_token":"asdnOIHSD2134..."
+                }
+        }
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/_settings_notifications_push_post_request'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_settings_notifications_push_post_200_response'
+          description: Ok
+      security:
+      - JWTHeader: []
+      - CookieAuth: []
+      summary: Push subscribe
+      tags:
+      - Push notifications
+  /auctions/entry/{auction_id}:
+    get:
+      parameters:
+      - description: ObjectId of auction
+        explode: false
+        in: path
+        name: auction_id
+        required: true
+        schema:
+          format: ObjectId
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_auctions_entry__auction_id__get_200_response'
+          description: Successful operation
+      summary: Gets information about auction by auction Id
+      tags:
+      - Auction Entry
+  /auctions/entry/{auction_id}/bids:
+    get:
+      parameters:
+      - description: ObjectId of auction
+        explode: false
+        in: path
+        name: auction_id
+        required: true
+        schema:
+          format: ObjectId
+          type: string
+        style: simple
+      - description: "Include additional information.  \nWill add a new response section\
+          \ with all information about requested model.\n"
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          enum:
+          - auction
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_auctions_entry__auction_id__bids_get_200_response'
+          description: Successful operation
+      summary: Gets auction bids by auction Id
+      tags:
+      - Auction Entry
+  /auctions/create:
+    post:
+      description: "Create auction, for riven or lich item types."
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Riven:
+                description: Posting auction for riven item
+                value:
+                  note: Some Note
+                  starting_price: 1
+                  buyout_price: 12
+                  minimal_reputation: 1
+                  minimal_increment: 1
+                  private: false
+                  item:
+                    type: riven
+                    attributes:
+                    - positive: true
+                      value: 30
+                      url_name: critical_chance
+                    - positive: true
+                      value: 50
+                      url_name: damage_vs_grineer
+                    name: SomeNameThatWillPassTheFilter
+                    mastery_level: 4
+                    re_rolls: 0
+                    weapon_url_name: paracyst
+                    polarity: madurai
+                    mod_rank: 2
+              Lich:
+                description: Posting auction for lich item
+                value:
+                  note: Some Note
+                  starting_price: 1
+                  buyout_price: 12
+                  minimal_reputation: 1
+                  minimal_increment: 1
+                  private: false
+                  item:
+                    type: lich
+                    weapon_url_name: kuva_hind
+                    damage: 34
+                    ephemera: true
+                    quirk: paranoid
+                    element: cold
+              Kubrow:
+                description: Posting auction for Kubrow item
+            schema:
+              $ref: '#/components/schemas/_auctions_create_post_request'
+        description: Info about auction and item
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_auctions_create_post_200_response'
+          description: Successful operation
+      security:
+      - JWTHeader: []
+      - CookieAuth: []
+      summary: ⚠ Auction creation.
+      tags:
+      - Auctions
+  /auctions/search?type=riven:
+    get:
+      description: "Auctions from banned users will be excluded.  \nYou must specify\
+        \ weapon or one positive atttribute, at least.\n"
+      parameters:
+      - description: |
+          Asks the server to return content for specified platform, default: `pc`.
+        explode: false
+        in: header
+        name: Platform
+        required: false
+        schema:
+          enum:
+          - xbox
+          - pc
+          - ps4
+          - switch
+          type: string
+        style: simple
+      - description: "auction type, if not specified implied: all"
+        explode: true
+        in: query
+        name: buyout_policy
+        required: false
+        schema:
+          enum:
+          - with
+          - direct
+          type: string
+        style: form
+      - description: riven weapon `url_name` property
+        explode: true
+        in: query
+        name: weapon_url_name
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Positive attributes in for of string: `attr1,attr2,attr3`
+        explode: true
+        in: query
+        name: positive_stats
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Negative attributes in for of string: `attr1,attr2,attr3`
+          For None use the string: `None`
+        explode: true
+        in: query
+        name: negative_stats
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Not used on the frontend right now, becuse this is not a very\
+          \ usefull flag.\nUsed in conjuction with positive stats, like: \n- `allOf`\
+          \ will get riven auction that contains all of defined positive attributes\n\
+          - `anyOf` will get riven auction that contains any of defined positive attributes\n\
+          \nDefault value is `allOf`\n"
+        explode: true
+        in: query
+        name: operation
+        required: false
+        schema:
+          enum:
+          - anyOf
+          - allOf
+          type: string
+        style: form
+      - description: Minimum rank value of riven mod
+        explode: true
+        in: query
+        name: mastery_rank_min
+        required: false
+        schema:
+          maximum: 16
+          minimum: 7
+          type: integer
+        style: form
+      - description: Maximum rank value of riven mod
+        explode: true
+        in: query
+        name: mastery_rank_max
+        required: false
+        schema:
+          maximum: 16
+          minimum: 7
+          type: integer
+        style: form
+      - description: Minimum amount of rolls
+        explode: true
+        in: query
+        name: re_rolls_min
+        required: false
+        schema:
+          maximum: 999
+          minimum: 0
+          type: integer
+        style: form
+      - description: Maximum amount of rolls
+        explode: true
+        in: query
+        name: re_rolls_max
+        required: false
+        schema:
+          maximum: 999
+          minimum: 0
+          type: integer
+        style: form
+      - description: Should mod be maxed or whatever.
+        explode: true
+        in: query
+        name: mod_rank
+        required: false
+        schema:
+          enum:
+          - any
+          - maxed
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: polarity
+        required: false
+        schema:
+          enum:
+          - madurai
+          - vazarin
+          - naramon
+          - zenurik
+          - any
+          type: string
+        style: form
+      - description: "Sorting, by prices or by attributes value, ascending and descending."
+        explode: true
+        in: query
+        name: sort_by
+        required: false
+        schema:
+          enum:
+          - price_desc
+          - price_asc
+          - positive_attr_desc
+          - positive_attr_asc
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_auctions_search_type_riven_get_200_response'
+          description: Successful operation
+      summary: Get a list of riven auctions by given search params.
+      tags:
+      - Auctions
+  /auctions/search?type=lich:
+    get:
+      description: |
+        Auctions from banned users will be excluded.
+      parameters:
+      - description: |
+          Asks the server to return content for specified platform, default: `pc`.
+        explode: false
+        in: header
+        name: Platform
+        required: false
+        schema:
+          enum:
+          - xbox
+          - pc
+          - ps4
+          - switch
+          type: string
+        style: simple
+      - description: "auction type, if not specified implied: all"
+        explode: true
+        in: query
+        name: buyout_policy
+        required: false
+        schema:
+          enum:
+          - with
+          - direct
+          type: string
+        style: form
+      - description: lich weapon `url_name` property
+        explode: true
+        in: query
+        name: weapon_url_name
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: lich element
+        explode: true
+        in: query
+        name: element
+        required: false
+        schema:
+          $ref: '#/components/schemas/element'
+        style: form
+      - description: "lich is having ephemera  \nephemera is based on lich element.\n"
+        explode: true
+        in: query
+        name: ephemera
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: Minimum bonus damage value of desirable lich
+        explode: true
+        in: query
+        name: damage_min
+        required: false
+        schema:
+          maximum: 60
+          minimum: 25
+          type: integer
+        style: form
+      - description: Minimum bonus damage value of desirable lich
+        explode: true
+        in: query
+        name: damage_max
+        required: false
+        schema:
+          maximum: 60
+          minimum: 25
+          type: integer
+        style: form
+      - description: Lich quirk `url_name` property
+        explode: true
+        in: query
+        name: quirk
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Sorting, by prices or by weapon damage bonus value, ascending\
+          \ and descending."
+        explode: true
+        in: query
+        name: sort_by
+        required: false
+        schema:
+          enum:
+          - price_desc
+          - price_asc
+          - damage_desc
+          - damage_asc
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_auctions_search_type_riven_get_200_response'
+          description: Successful operation
+      summary: Get a list of lich auctions by given search params.
+      tags:
+      - Auctions
+  /lich/weapons:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_lich_weapons_get_200_response'
+          description: Successful operation
+      summary: Get a list of lich weapons.
+      tags:
+      - Liches
+  /lich/ephemeras:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_lich_ephemeras_get_200_response'
+          description: Successful operation
+      summary: Get a list of lich ephemeras.
+      tags:
+      - Liches
+  /lich/quirks:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_lich_quirks_get_200_response'
+          description: Successful operation
+      summary: Get a list of lich quirks.
+      tags:
+      - Liches
+  /sister/weapons:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_lich_weapons_get_200_response'
+          description: Successful operation
+      summary: Get a list of sister weapons.
+      tags:
+      - Sisters
+  /sister/ephermeras:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_lich_ephemeras_get_200_response'
+          description: Successful operation
+      summary: Get a list of sister ephemras.
+      tags:
+      - Sisters
+  /sister/quirks:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_lich_quirks_get_200_response'
+          description: Successful operation
+      summary: Get a list of sister quirks.
+      tags:
+      - Sisters
+  /riven/items:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_riven_items_get_200_response'
+          description: Successful operation
+      summary: Get a list of riven items.
+      tags:
+      - Rivens
+  /riven/attributes:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_riven_attributes_get_200_response'
+          description: Successful operation
+      summary: Get a list of riven attributes.
+      tags:
+      - Rivens
+  /locations:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_locations_get_200_response'
+          description: Successful operation
+      summary: Get a list of known game locations.
+      tags:
+      - Misc
+  /npc:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_npc_get_200_response'
+          description: Successful operation
+      summary: Get a list of known NPCs.
+      tags:
+      - Misc
+  /missions:
+    get:
+      parameters:
+      - description: |
+          Asks the server to return content translated into the specified language, default: `en`.
+        explode: false
+        in: header
+        name: Language
+        required: false
+        schema:
+          enum:
+          - en
+          - ru
+          - ko
+          - de
+          - fr
+          - pt
+          - zh-hans
+          - zh-hant
+          - es
+          - it
+          - pl
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_missions_get_200_response'
+          description: Successful operation
+      summary: Get a list of known NPCs.
+      tags:
+      - Misc
+components:
+  parameters:
+    language:
+      description: |
+        Asks the server to return content translated into the specified language, default: `en`.
+      explode: false
+      in: header
+      name: Language
+      required: false
+      schema:
+        enum:
+        - en
+        - ru
+        - ko
+        - de
+        - fr
+        - pt
+        - zh-hans
+        - zh-hant
+        - es
+        - it
+        - pl
+        type: string
+      style: simple
+    platform:
+      description: |
+        Asks the server to return content for specified platform, default: `pc`.
+      explode: false
+      in: header
+      name: Platform
+      required: false
+      schema:
+        enum:
+        - xbox
+        - pc
+        - ps4
+        - switch
+        type: string
+      style: simple
+    url_name:
+      description: url_name of an item
+      explode: false
+      in: path
+      name: url_name
+      required: true
+      schema:
+        example: mirage_prime_systems
+        type: string
+      style: simple
+    auction_id:
+      description: ObjectId of auction
+      explode: false
+      in: path
+      name: auction_id
+      required: true
+      schema:
+        format: ObjectId
+        type: string
+      style: simple
+    buyout_policy:
+      description: "auction type, if not specified implied: all"
+      explode: true
+      in: query
+      name: buyout_policy
+      required: false
+      schema:
+        enum:
+        - with
+        - direct
+        type: string
+      style: form
+  schemas:
+    element:
+      enum:
+      - impact
+      - heat
+      - cold
+      - electricity
+      - toxin
+      - magnetic
+      - radiation
+      type: string
+    rarities:
+      description: How rare something can be considered
+      enum:
+      - very_common
+      - common
+      - uncommon
+      - rare
+      - legendary
+      type: string
+    currentUser:
+      example:
+        role: anonymous
+        patreon_profile:
+          patreon_founder: true
+          subscription: true
+          patreon_badge: bronze
+        unread_messages: 6
+        avatar: avatar
+        platform: ps4
+        linked_accounts:
+          steam_profile: true
+          xbox_profile: true
+          patreon_profile: true
+        written_reviews: 0
+        ingame_name: ingame_name
+        ban_reason: ban_reason
+        background: background
+        check_code: check_code
+        anonymous: true
+        id: id
+        banned: true
+        region: region
+        has_email: true
+        verification: true
+      properties:
+        id:
+          format: ObjectId
+          type: string
+        anonymous:
+          type: boolean
+        verification:
+          type: boolean
+        ingame_name:
+          type: string
+        check_code:
+          type: string
+        role:
+          enum:
+          - anonymous
+          - user
+          - moderator
+          - admin
+          type: string
+        patreon_profile:
+          $ref: '#/components/schemas/currentUser_patreon_profile'
+        platform:
+          enum:
+          - ps4
+          - pc
+          - xbox
+          type: string
+        region:
+          type: string
+        banned:
+          type: boolean
+        ban_reason:
+          type: string
+        avatar:
+          description: Path to user avatar in static folder.
+          type: string
+        background:
+          description: Path to user background in static folder.
+          type: string
+        linked_accounts:
+          $ref: '#/components/schemas/currentUser_linked_accounts'
+        has_email:
+          type: boolean
+        written_reviews:
+          description: how much reviews user wrote today.
+          type: integer
+        unread_messages:
+          type: integer
+      type: object
+    userShort:
+      properties:
+        id:
+          example: 54e0cdf8e77989024a1e34b2
+          format: ObjectId
+          type: string
+        ingame_name:
+          example: KycKyc
+          type: string
+        status:
+          enum:
+          - ingame
+          - online
+          - offline
+          example: online
+          type: string
+        region:
+          example: en
+          type: string
+        reputation:
+          example: 12
+          type: integer
+        avatar:
+          example: user/avatar/54e0cdf8e77989024a1e34b2.png?0148cdbc2f95ae09d1b7dc863bbff8a9
+          nullable: true
+          type: string
+        last_seen:
+          example: 2021-03-15T15:53:16.133Z
+          format: date-time
+          nullable: true
+          type: string
+      type: object
+    rivenItem:
+      example:
+        url_name: falcor
+        thumb: thumb
+        icon: icon
+        item_name: item_name
+        id: 5cf5724f9597e1019b1678c7
+        icon_format: land
+        riven_type: shotgun
+        group: primary
+      properties:
+        id:
+          example: 5cf5724f9597e1019b1678c7
+          format: ObjectId
+          type: string
+        url_name:
+          example: falcor
+          type: string
+        group:
+          description: "Group of the item, like shotgin, rifle, melee, etc.  \nUsed\
+            \ for grouping within UI elements.\n"
+          enum:
+          - primary
+          - secondary
+          - melee
+          - zaw
+          - sentinel
+          - archgun
+          - kitgun
+          type: string
+        riven_type:
+          description: "Type of the riven mod, to restrict certain attributes to specific\
+            \ types."
+          enum:
+          - shotgun
+          - rifle
+          - pistol
+          - melee
+          - zaw
+          - kitgun
+          type: string
+        icon:
+          description: path to the icon asset file
+          type: string
+        icon_format:
+          enum:
+          - land
+          - port
+          type: string
+        thumb:
+          type: string
+        item_name:
+          description: "Name of the weapon, depends on the requested language (headers)"
+          type: string
+      type: object
+    rivenAttribute:
+      example:
+        url_name: ammo_maximum
+        prefix: Ampi
+        negative_only: false
+        effect: Ammo Maximum
+        search_only: true
+        id: 5c5ca81a96e8d2003834fe63
+        units: seconds
+        suffix: Bin
+        exclusive_to: kitgun
+        positive_is_negative: false
+        group: default
+      properties:
+        id:
+          example: 5c5ca81a96e8d2003834fe63
+          format: ObjectId
+          type: string
+        url_name:
+          example: ammo_maximum
+          type: string
+        group:
+          description: "Group of the attribute, like top, melee, etc.  \nUsed for\
+            \ grouping within UI elements.\n"
+          enum:
+          - default
+          - melee
+          - top
+          example: default
+          type: string
+        prefix:
+          example: Ampi
+          type: string
+        suffix:
+          example: Bin
+          type: string
+        positive_is_negative:
+          description: "Negative value of this attribute indicate that attribute is\
+            \ positive, e.g. `Recoil`."
+          example: false
+          type: boolean
+        exclusive_to:
+          description: "This attribute is only available on specific types of items,\
+            \ check item property: `riven_type`  \nIf `null`, then this attribute\
+            \ can be selected on every item.\n"
+          enum:
+          - kitgun
+          - pistol
+          - rifle
+          - shotgun
+          - melee
+          - zaw
+          - null
+          nullable: true
+          type: string
+        effect:
+          description: "Name of the attribute, depends on the requested language (headers)"
+          example: Ammo Maximum
+          type: string
+        units:
+          description: measurement units
+          enum:
+          - percent
+          - seconds
+          - null
+          example: seconds
+          nullable: true
+          type: string
+        negative_only:
+          description: This attribute occurs only as a negative.
+          example: false
+          type: boolean
+        search_only:
+          description: used only while searching for auctions
+          example: true
+          type: boolean
+      type: object
+    rivenAuction:
+      properties:
+        type:
+          description: "type of the item, in this case it's `riven`"
+          example: riven
+          type: string
+        attributes:
+          items:
+            $ref: '#/components/schemas/rivenAuction_attributes_inner'
+          maxItems: 4
+          minItems: 1
+          type: array
+        name:
+          description: Riven mod name
+          example: conci-hexacron
+          type: string
+        mastery_level:
+          description: Mastery level requirennment for that mod.
+          maximum: 16
+          minimum: 8
+          type: integer
+        re_rolls:
+          type: integer
+        weapon_url_name:
+          description: weapon name in url format.
+          type: string
+        polarity:
+          enum:
+          - madurai
+          - vazarin
+          - naramon
+          - zenurik
+          type: string
+        mod_rank:
+          maximum: 10
+          minimum: 0
+          type: integer
+      type: object
+    nemesisWeapon:
+      example:
+        url_name: kuva_bramma
+        thumb: icons/en/thumbs/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.128x128.png
+        icon: icons/en/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.png
+        item_name: item_name
+        id: 5e98559a3d9f64005cd702eb
+        icon_format: land
+      properties:
+        id:
+          example: 5e98559a3d9f64005cd702eb
+          format: ObjectId
+          type: string
+        url_name:
+          example: kuva_bramma
+          type: string
+        icon:
+          description: |
+            it's a part of url, if you want to get an image you need to prepend assets root dirrectory: `http://warframe.market/static/assets/`
+          example: icons/en/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.png
+          type: string
+        icon_format:
+          enum:
+          - land
+          - port
+          type: string
+        thumb:
+          description: thumb of an icon
+          example: icons/en/thumbs/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.128x128.png
+          type: string
+        item_name:
+          description: Name of the weapon
+          type: string
+      type: object
+    nemesisEphemera:
+      example:
+        url_name: vengeful_shockwave
+        thumb: icons/en/thumbs/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.128x128.png
+        icon: icons/en/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.png
+        animation_format: land
+        item_name: Vengeful Shockwave Ephemera
+        id: 5e9854b93d9f64004f9136bd
+        icon_format: port
+        animation: animations/vengeful_shockwave.971437bf48dec307ed268285b8798228.gif
+        element: null
+      properties:
+        id:
+          example: 5e9854b93d9f64004f9136bd
+          format: ObjectId
+          type: string
+        url_name:
+          example: vengeful_shockwave
+          type: string
+        icon:
+          description: |
+            it's a part of url, if you want to get an image you need to prepend assets root dirrectory: `http://warframe.market/static/assets/`
+          example: icons/en/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.png
+          type: string
+        icon_format:
+          enum:
+          - land
+          - port
+          example: port
+          type: string
+        thumb:
+          description: thumb of an icon
+          example: icons/en/thumbs/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.128x128.png
+          type: string
+        animation:
+          description: Path to the GIF animatgion of ephemera
+          example: animations/vengeful_shockwave.971437bf48dec307ed268285b8798228.gif
+          type: string
+        animation_format:
+          enum:
+          - land
+          - port
+          type: string
+        element:
+          $ref: '#/components/schemas/element'
+        item_name:
+          description: Name of the ephemera
+          example: Vengeful Shockwave Ephemera
+          type: string
+      type: object
+    nemesisQuirk:
+      example:
+        url_name: poor_sense_of_balance
+        description: The lich will retreat after kneeling down and without stabbing
+        item_name: Poor Sense of Balance
+        id: 5e9855a43d9f6400697e895c
+        group: default
+      properties:
+        id:
+          example: 5e9855a43d9f6400697e895c
+          format: ObjectId
+          type: string
+        url_name:
+          example: poor_sense_of_balance
+          type: string
+        item_name:
+          description: Name of the quirk
+          example: Poor Sense of Balance
+          type: string
+        description:
+          description: Description of the quirk
+          example: The lich will retreat after kneeling down and without stabbing
+          type: string
+        group:
+          description: "which group this element belongs to, is used to display specific\
+            \ groups on the frontend."
+          example: default
+          type: string
+      type: object
+    lichAuction:
+      properties:
+        type:
+          description: "type of the item, in this case it's `lich`"
+          example: lich
+          type: string
+        weapon_url_name:
+          description: url_name of any Kuva weapon
+          example: kuva_ogris
+          type: string
+        element:
+          $ref: '#/components/schemas/element'
+        damage:
+          maximum: 60
+          minimum: 25
+          type: integer
+        ephemera:
+          default: false
+          description: Lich having Kuva ephemera (based on element)
+          example: true
+          type: boolean
+        quirk:
+          default: undefined
+          description: url_name of any Kuva quirk
+          example: fear_of_kubrows
+          type: string
+        name:
+          description: Will not be used for now (?)
+          type: string
+      type: object
+    kubrowAuction:
+      properties:
+        type:
+          description: "type of the item, in this case it's `kubrow`"
+          example: kubrow
+          type: string
+        name:
+          type: string
+      type: object
+    auctionEntry:
+      example:
+        owner: owner
+        top_bid: 5
+        note: note
+        private: true
+        item: null
+        visible: true
+        is_direct_sell: true
+        created: 2000-01-23T04:56:07.000+00:00
+        platform: switch
+        is_marked_for: null
+        buyout_price: 1
+        minimal_increment: 5
+        winner: winner
+        starting_price: 1
+        marked_operation_at: 2000-01-23T04:56:07.000+00:00
+        note_raw: note_raw
+        closed: true
+        id: id
+        updated: 2000-01-23T04:56:07.000+00:00
+        minimal_reputation: 0
+      properties:
+        id:
+          format: ObjectId
+          type: string
+        minimal_reputation:
+          default: 0
+          description: Minimal amount of reputation that is required to participate
+            in this auction.
+          type: integer
+        winner:
+          description: "If winner is set, auction is in the paused state. While on\
+            \ pause, bids can't be added, but can be removed."
+          format: ObjectId
+          nullable: true
+          type: string
+        private:
+          type: boolean
+        visible:
+          type: boolean
+        note_raw:
+          description: "Raw format string, use it inside textarea, for editing purposes."
+          type: string
+        note:
+          description: "It's safe to inject this into html, this is refined, formatted\
+            \ string from MD processor."
+          type: string
+        owner:
+          format: ObjectId
+          type: string
+        starting_price:
+          minimum: 1
+          type: integer
+        buyout_price:
+          description: "if `buyout_price` is set to null, that means ∞"
+          nullable: true
+          type: integer
+        minimal_increment:
+          default: 1
+          description: Minimum bid increase value
+          type: integer
+        is_direct_sell:
+          description: "Shortcut to `starting_price` == `buyout_price`, means that\
+            \ auction is not an auction, but an order."
+          type: boolean
+        top_bid:
+          nullable: true
+          type: integer
+        created:
+          format: date-time
+          type: string
+        updated:
+          description: "Last time auction was updated, eighter by owner or by placing\
+            \ a bid."
+          format: date-time
+          type: string
+        platform:
+          enum:
+          - switch
+          - pc
+          - ps4
+          - xbox
+          type: string
+        closed:
+          description: "Auction is closed, and was marked for removal or archiving,\
+            \ no one can add or remove bids now."
+          type: boolean
+        is_marked_for:
+          description: Auction will be removed or archivated after `marked_operation_at`
+          enum:
+          - null
+          - removing
+          - archiving
+          nullable: true
+          type: string
+        marked_operation_at:
+          format: date-time
+          nullable: true
+          type: string
+        item:
+          $ref: '#/components/schemas/_auctions_create_post_request_item'
+      type: object
+    auctionEntryExpanded:
+      allOf:
+      - $ref: '#/components/schemas/auctionEntry'
+      - properties:
+          owner:
+            $ref: '#/components/schemas/userShort'
+        type: object
+      description: |
+        `owner` will contain `userShort` model.
+        ***
+    bid:
+      example:
+        created: 2000-01-23T04:56:07.000+00:00
+        id: id
+        user: user
+        value: 0
+        updated: 2000-01-23T04:56:07.000+00:00
+        auction: auction
+      properties:
+        id:
+          format: ObjectId
+          type: string
+        auction:
+          format: ObjectId
+          type: string
+        user:
+          format: ObjectId
+          type: string
+        value:
+          type: integer
+        created:
+          format: date-time
+          type: string
+        updated:
+          format: date-time
+          type: string
+      type: object
+    langInItem:
+      properties:
+        item_name:
+          example: Axi A1 Relic
+          type: string
+        description:
+          example: An artifact containing Orokin secrets. It can only be opened through
+            the power of the Void.
+          type: string
+        wiki_link:
+          example: https://warframe.fandom.com/wiki/Void_Relic
+          nullable: true
+          type: string
+        drop:
+          items:
+            $ref: '#/components/schemas/langInItem_drop_inner'
+          type: array
+      type: object
+    ItemCommon:
+      properties:
+        id:
+          example: 604f697f7bdb09603b885d1e
+          format: ObjectId
+          type: string
+        url_name:
+          description: "[a-z] snake case name of the item"
+          example: axi_a1_relic
+          type: string
+        icon:
+          description: |
+            it's a part of url, if you want to get an image you need to prepend assets root dirrectory: `http://warframe.market/static/assets/`
+          example: icons/en/axi_a1_relic.a74c06f0cae21bdb8933685c867385f8.png
+          type: string
+        icon_format:
+          enum:
+          - land
+          - port
+          type: string
+        thumb:
+          description: Thumb of an icon
+          example: /icons/en/thumbs/axi_a1_relic.a74c06f0cae21bdb8933685c867385f8.128x128.png
+          type: string
+        sub_icon:
+          description: "Usually, if item is part of set and not set itself, it will\
+            \ have `sub_icon` \nlike: **Mirage Blueprint** is part of **Mirage Set**,\
+            \ therefore the `icon` will be the **Mirage warframe** icon, and the `sub_icon`\
+            \ will be the **blueprint** icon\n"
+          example: sub_icons/systems_128x128.png
+          type: string
+        mod_max_rank:
+          description: in the next api version will be renamed to `max_rank`
+          example: 10
+          type: integer
+        subtypes:
+          description: relics and fishes are having this field
+          example:
+          - intact
+          - exceptional
+          - flawless
+          - radiant
+          items:
+            type: string
+          type: array
+        tags:
+          example:
+          - relic
+          - axi
+          items:
+            type: string
+          type: array
+        ducats:
+          example: 45
+          type: integer
+        quantity_for_set:
+          example: 1
+          type: integer
+      type: object
+    ItemInOrder:
+      allOf:
+      - $ref: '#/components/schemas/ItemCommon'
+      - properties:
+          en:
+            $ref: '#/components/schemas/ItemInOrder_allOf_en'
+          ru:
+            $ref: '#/components/schemas/ItemInOrder_allOf_ru'
+          ko:
+            $ref: '#/components/schemas/ItemInOrder_allOf_ko'
+          fr:
+            $ref: '#/components/schemas/ItemInOrder_allOf_fr'
+          de:
+            $ref: '#/components/schemas/ItemInOrder_allOf_de'
+          sv:
+            $ref: '#/components/schemas/ItemInOrder_allOf_en'
+          zh_hant:
+            $ref: '#/components/schemas/ItemInOrder_allOf_zh_hant'
+          zh_hans:
+            $ref: '#/components/schemas/ItemInOrder_allOf_zh_hans'
+          pt:
+            $ref: '#/components/schemas/ItemInOrder_allOf_pt'
+          es:
+            $ref: '#/components/schemas/ItemInOrder_allOf_es'
+          pl:
+            $ref: '#/components/schemas/ItemInOrder_allOf_pl'
+        type: object
+      description: "same as ItemFull, but with dried up lang related fields and without\
+        \ rarity, set_root, MR, trading tax"
+      type: object
+    ItemFull:
+      allOf:
+      - $ref: '#/components/schemas/ItemCommon'
+      - properties:
+          set_root:
+            description: This item represents set itself
+            example: false
+            type: boolean
+          mastery_level:
+            description: Mastery requirenment fro this item
+            example: 12
+            type: integer
+          rarity:
+            description: Item rarity
+            enum:
+            - common
+            - uncommon
+            - rare
+            - legendary
+            - peculiar
+            example: rare
+            type: string
+          trading_tax:
+            example: 8000
+            type: integer
+          en:
+            $ref: '#/components/schemas/langInItem'
+          ru:
+            $ref: '#/components/schemas/langInItem'
+          ko:
+            $ref: '#/components/schemas/langInItem'
+          fr:
+            $ref: '#/components/schemas/langInItem'
+          de:
+            $ref: '#/components/schemas/langInItem'
+          sv:
+            $ref: '#/components/schemas/langInItem'
+          zh_hant:
+            $ref: '#/components/schemas/langInItem'
+          zh_hans:
+            $ref: '#/components/schemas/langInItem'
+          pt:
+            $ref: '#/components/schemas/langInItem'
+          es:
+            $ref: '#/components/schemas/langInItem'
+          pl:
+            $ref: '#/components/schemas/langInItem'
+        type: object
+      description: "same as ItemInOrder, but lang related fields contain more infos,\
+        \ + rarity, set_root, MR, trading tax."
+      type: object
+    ItemShort:
+      example:
+        url_name: mirage_prime_systems
+        thumb: icons/en/thumbs/Mirage_Prime_Set.e7f8f484dd6ae6c35f0767fff35a5109.128x128.png
+        vaulted: true
+        item_name: Mirage Prime Systems
+        id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        url_name:
+          example: mirage_prime_systems
+          type: string
+        thumb:
+          description: Small icon
+          example: icons/en/thumbs/Mirage_Prime_Set.e7f8f484dd6ae6c35f0767fff35a5109.128x128.png
+          type: string
+        item_name:
+          description: depends on you `Language` header
+          example: Mirage Prime Systems
+          type: string
+        vaulted:
+          description: null if not vaulted
+          example: true
+          nullable: true
+          type: boolean
+      type: object
+    OrderCommon:
+      properties:
+        id:
+          example: 604f83027bdb097a7567b75d
+          format: ObjectId
+          type: string
+        platinum:
+          example: 2
+          type: integer
+        quantity:
+          example: 12
+          type: integer
+        order_type:
+          enum:
+          - sell
+          - buy
+          type: string
+        platform:
+          enum:
+          - xbox
+          - pc
+          - ps4
+          - switch
+          type: string
+        region:
+          description: will be deprecated eventually
+          type: string
+        creation_date:
+          example: 2021-03-15T15:53:38Z
+          format: date-time
+          type: string
+        last_update:
+          example: 2021-03-15T15:53:38Z
+          format: date-time
+          type: string
+        subtype:
+          description: "subtyppe oof an item, all valid subtypes defined inside Item\
+            \ model `subtypes` field"
+          example: exceptional
+          type: string
+        visible:
+          description: |
+            Is this order visible?
+            All public orders will be visible, and only orders in your profile could be invisible.
+          example: true
+          type: boolean
+      type: object
+    OrderRow:
+      allOf:
+      - $ref: '#/components/schemas/OrderCommon'
+      - properties:
+          user:
+            $ref: '#/components/schemas/userShort'
+        type: object
+      type: object
+    OrderFull:
+      allOf:
+      - $ref: '#/components/schemas/OrderCommon'
+      - properties:
+          user:
+            $ref: '#/components/schemas/userShort'
+          item:
+            $ref: '#/components/schemas/ItemInOrder'
+        type: object
+      type: object
+    DropsourceMission:
+      properties:
+        type:
+          example: mission
+          type: string
+        item:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          type: string
+        location:
+          example: 62d2eb4775156700663c838e
+          type: string
+        mission:
+          example: 62d2f0a2751567007abb198b
+          type: string
+        event:
+          example: true
+          nullable: true
+          type: boolean
+        rate:
+          type: number
+        rarity:
+          description: How rare item is
+          enum:
+          - very_common
+          - common
+          - uncommon
+          - rare
+          - ultra_rare
+          - legendary
+          type: string
+        item_subtype:
+          enum:
+          - intact
+          - exceptional
+          - flawless
+          - radiant
+          - small
+          - medium
+          - large
+          - basic
+          - adorned
+          - magnificent
+          nullable: true
+          type: string
+        rotation:
+          enum:
+          - a
+          - b
+          - c
+          nullable: true
+          type: string
+        stage:
+          description: openworld missions only
+          items:
+            enum:
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - final
+            type: string
+          nullable: true
+          type: array
+        modifier:
+          example: normal
+          nullable: true
+          type: string
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: id
+          type: string
+      type: object
+    DropsourceRelic:
+      properties:
+        type:
+          example: relic
+          type: string
+        item:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          type: string
+        relic:
+          example: 6054dd405221e30057500f44
+          type: string
+        rarity:
+          description: How rare item is
+          enum:
+          - common
+          - uncommon
+          - rare
+          type: string
+        rates:
+          $ref: '#/components/schemas/DropsourceRelic_rates'
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          type: string
+      type: object
+    DropsourceNpc:
+      description: item drop from enemy
+      properties:
+        type:
+          example: npc
+          type: string
+        item:
+          description: id of an item
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          type: string
+        npc:
+          description: id of an npc
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          type: string
+        rarity:
+          description: How rare item is
+          enum:
+          - very_common
+          - common
+          - uncommon
+          - rare
+          - legendary
+          type: string
+        rate:
+          description: "the droprate of the item being dropped from the enemy's drop\
+            \ list, the final droprate should be multipled with chance"
+          example: 4.42
+          type: number
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+      type: object
+    NpcDropData:
+      description: What you can get from this npc
+      properties:
+        type:
+          enum:
+          - npc
+          type: string
+        item:
+          description: id of an item
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        npc:
+          description: id of an npc
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        rate:
+          description: Chance to get item on kill
+          example: 4.5
+          type: number
+        rarity:
+          $ref: '#/components/schemas/rarities'
+      type: object
+    MissionDropData:
+      description: What you can get from this mission as reward
+      properties:
+        type:
+          enum:
+          - mission
+          type: string
+        item:
+          description: id of an item
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        mission:
+          description: id of a mission
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        location:
+          description: id of a location
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        rate:
+          description: Chance to get item on mission completion or rotation completion
+          example: 4.5
+          type: number
+        rarity:
+          $ref: '#/components/schemas/rarities'
+        rotation:
+          enum:
+          - b
+          - a
+          - c
+          type: string
+      type: object
+    RelicDropData:
+      description: What you can get from this relic
+      properties:
+        type:
+          enum:
+          - relic
+          type: string
+        item:
+          description: id of an item
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        relic:
+          description: id of a relic
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        rates:
+          $ref: '#/components/schemas/RelicDropData_rates'
+        rarity:
+          $ref: '#/components/schemas/rarities'
+      type: object
+    Location:
+      description: SolNodes basically
+      example:
+        url_name: plains_of_eidolon
+        thumb: thumb
+        max_level: 6.027456183070403
+        system_name: Earth
+        icon: icon
+        node_name: Plains of Eidolon
+        id: 5a2feeb1c2c9e90cbdaa23d2
+        min_level: 0.8008281904610115
+      properties:
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        icon:
+          type: string
+        node_name:
+          description: Node name
+          example: Plains of Eidolon
+          type: string
+        min_level:
+          description: min lvl of npc on this location
+          nullable: true
+          type: number
+        url_name:
+          example: plains_of_eidolon
+          type: string
+        thumb:
+          type: string
+        max_level:
+          description: max lvl of npc on this location
+          nullable: true
+          type: number
+        system_name:
+          description: System name
+          example: Earth
+          type: string
+      type: object
+    Npc:
+      description: Known npc
+      example:
+        url_name: infested_corpus
+        thumb: thumb
+        icon: icon
+        name: Infested Corpus
+        id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        url_name:
+          example: infested_corpus
+          type: string
+        icon:
+          type: string
+        thumb:
+          type: string
+        name:
+          description: Npc name
+          example: Infested Corpus
+          type: string
+      type: object
+    Mission:
+      description: Known missions
+      example:
+        url_name: void_storm
+        thumb: thumb
+        icon: icon
+        name: Void Storm
+        id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        id:
+          example: 5a2feeb1c2c9e90cbdaa23d2
+          format: ObjectId
+          type: string
+        url_name:
+          example: void_storm
+          type: string
+        icon:
+          type: string
+        thumb:
+          type: string
+        name:
+          description: Mission name
+          example: Void Storm
+          type: string
+      type: object
+    _items_get_200_response_payload:
+      example:
+        items:
+        - url_name: mirage_prime_systems
+          thumb: icons/en/thumbs/Mirage_Prime_Set.e7f8f484dd6ae6c35f0767fff35a5109.128x128.png
+          vaulted: true
+          item_name: Mirage Prime Systems
+          id: 5a2feeb1c2c9e90cbdaa23d2
+        - url_name: mirage_prime_systems
+          thumb: icons/en/thumbs/Mirage_Prime_Set.e7f8f484dd6ae6c35f0767fff35a5109.128x128.png
+          vaulted: true
+          item_name: Mirage Prime Systems
+          id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ItemShort'
+          type: array
+      type: object
+    _items_get_200_response:
+      example:
+        payload:
+          items:
+          - url_name: mirage_prime_systems
+            thumb: icons/en/thumbs/Mirage_Prime_Set.e7f8f484dd6ae6c35f0767fff35a5109.128x128.png
+            vaulted: true
+            item_name: Mirage Prime Systems
+            id: 5a2feeb1c2c9e90cbdaa23d2
+          - url_name: mirage_prime_systems
+            thumb: icons/en/thumbs/Mirage_Prime_Set.e7f8f484dd6ae6c35f0767fff35a5109.128x128.png
+            vaulted: true
+            item_name: Mirage Prime Systems
+            id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        payload:
+          $ref: '#/components/schemas/_items_get_200_response_payload'
+      type: object
+    getItemInfo_200_response_payload_item:
+      example:
+        id: 5a2feeb2c2c9e90cbdaa23d4
+        items_in_set:
+        - null
+        - null
+      properties:
+        id:
+          description: Object id of requested item
+          example: 5a2feeb2c2c9e90cbdaa23d4
+          type: string
+        items_in_set:
+          items:
+            $ref: '#/components/schemas/ItemFull'
+          type: array
+      type: object
+    getItemInfo_200_response_payload:
+      example:
+        item:
+          id: 5a2feeb2c2c9e90cbdaa23d4
+          items_in_set:
+          - null
+          - null
+      properties:
+        item:
+          $ref: '#/components/schemas/getItemInfo_200_response_payload_item'
+      type: object
+    getItemInfo_200_response:
+      example:
+        payload:
+          item:
+            id: 5a2feeb2c2c9e90cbdaa23d4
+            items_in_set:
+            - null
+            - null
+      properties:
+        payload:
+          $ref: '#/components/schemas/getItemInfo_200_response_payload'
+      type: object
+    _items__url_name__orders_get_200_response_payload_orders_inner:
+      allOf:
+      - $ref: '#/components/schemas/OrderCommon'
+      - properties:
+          user:
+            $ref: '#/components/schemas/userShort'
+        type: object
+      type: object
+    _items__url_name__orders_get_200_response_payload:
+      example:
+        orders:
+        - null
+        - null
+      properties:
+        orders:
+          items:
+            $ref: '#/components/schemas/_items__url_name__orders_get_200_response_payload_orders_inner'
+          type: array
+      type: object
+    _items__url_name__orders_get_200_response:
+      example:
+        include:
+          item:
+            id: 5a2feeb2c2c9e90cbdaa23d4
+            items_in_set:
+            - null
+            - null
+        payload:
+          orders:
+          - null
+          - null
+      properties:
+        payload:
+          $ref: '#/components/schemas/_items__url_name__orders_get_200_response_payload'
+        include:
+          $ref: '#/components/schemas/getItemInfo_200_response_payload'
+      required:
+      - payload
+      type: object
+    _items__url_name__dropsources_get_200_response_payload_dropsources_inner:
+      anyOf:
+      - $ref: '#/components/schemas/DropsourceMission'
+      - $ref: '#/components/schemas/DropsourceNpc'
+      - $ref: '#/components/schemas/DropsourceRelic'
+    _items__url_name__dropsources_get_200_response_payload:
+      example:
+        dropsources:
+        - null
+        - null
+      properties:
+        dropsources:
+          items:
+            $ref: '#/components/schemas/_items__url_name__dropsources_get_200_response_payload_dropsources_inner'
+          type: array
+      type: object
+    _items__url_name__dropsources_get_200_response:
+      example:
+        include:
+          item:
+            id: 5a2feeb2c2c9e90cbdaa23d4
+            items_in_set:
+            - null
+            - null
+        payload:
+          dropsources:
+          - null
+          - null
+      properties:
+        payload:
+          $ref: '#/components/schemas/_items__url_name__dropsources_get_200_response_payload'
+        include:
+          $ref: '#/components/schemas/getItemInfo_200_response_payload'
+      required:
+      - payload
+      type: object
+    _profile_orders_post_request:
+      properties:
+        item:
+          description: ObjectId of an item
+          example: 59e203ce115f1d887cfd7ac6
+          format: ObjectID
+          type: string
+        order_type:
+          enum:
+          - sell
+          - buy
+          example: sell
+          type: string
+        platinum:
+          example: 12
+          type: integer
+        quantity:
+          example: 5
+          type: integer
+        visible:
+          example: true
+          type: boolean
+        rank:
+          example: 3
+          type: integer
+        subtype:
+          description: Check item `subtypes` field for possible values
+          example: flawless
+          type: string
+      type: object
+    _profile_orders_post_200_response_payload_order:
+      allOf:
+      - $ref: '#/components/schemas/OrderCommon'
+      - properties:
+          item:
+            allOf:
+            - $ref: '#/components/schemas/ItemInOrder'
+            type: object
+        type: object
+      type: object
+    _profile_orders_post_200_response_payload:
+      example:
+        order: null
+      properties:
+        order:
+          $ref: '#/components/schemas/_profile_orders_post_200_response_payload_order'
+      type: object
+    _profile_orders_post_200_response:
+      example:
+        payload:
+          order: null
+      properties:
+        payload:
+          $ref: '#/components/schemas/_profile_orders_post_200_response_payload'
+      type: object
+    _auth_signin_post_request:
+      properties:
+        auth_type:
+          default: cookie
+          enum:
+          - cookie
+          - header
+          type: string
+        email:
+          type: string
+        password:
+          format: password
+          type: string
+        device_id:
+          description: "Optional device_id, defined on client side.  \nThis param\
+            \ help us to identify your device between login sessions.\n"
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    _auth_registration_post_request:
+      properties:
+        auth_type:
+          default: cookie
+          enum:
+          - cookie
+          - header
+          type: string
+        email:
+          type: string
+        password:
+          format: password
+          type: string
+        password_second:
+          format: password
+          type: string
+        region:
+          default: en
+          type: string
+        device_id:
+          description: "Optional device_id, defined on client side. This param help\
+            \ us to keep push subscription between login and logout. And clearer identify\
+            \ your device."
+          type: string
+        recaptcha:
+          description: "Google reCaptcha, required if you are not using special device\
+            \ auth."
+          type: string
+      required:
+      - email
+      - password
+      - password_second
+      type: object
+    _auth_restore_post_request:
+      properties:
+        email:
+          type: string
+      required:
+      - email
+      type: object
+    _settings_notifications_push_post_request_oneOf_subscription_keys:
+      properties:
+        p256dh:
+          type: string
+        auth:
+          type: string
+      required:
+      - auth
+      - p256dh
+      type: object
+    _settings_notifications_push_post_request_oneOf_subscription:
+      properties:
+        endpointeger:
+          type: string
+        keys:
+          $ref: '#/components/schemas/_settings_notifications_push_post_request_oneOf_subscription_keys'
+      required:
+      - endpointeger
+      - keys
+      type: object
+    _settings_notifications_push_post_request_oneOf:
+      properties:
+        device:
+          enum:
+          - web
+          type: string
+        subscription:
+          $ref: '#/components/schemas/_settings_notifications_push_post_request_oneOf_subscription'
+      required:
+      - device
+      - subscription
+      type: object
+    _settings_notifications_push_post_request_oneOf_1_subscription:
+      properties:
+        push_token:
+          type: string
+      required:
+      - push_token
+      type: object
+    _settings_notifications_push_post_request_oneOf_1:
+      properties:
+        device:
+          enum:
+          - android
+          type: string
+        subscription:
+          $ref: '#/components/schemas/_settings_notifications_push_post_request_oneOf_1_subscription'
+      required:
+      - device
+      - subscription
+      type: object
+    _settings_notifications_push_post_request:
+      oneOf:
+      - $ref: '#/components/schemas/_settings_notifications_push_post_request_oneOf'
+      - $ref: '#/components/schemas/_settings_notifications_push_post_request_oneOf_1'
+    _settings_notifications_push_post_200_response:
+      example:
+        payload: ok
+      properties:
+        payload:
+          enum:
+          - ok
+          type: string
+      type: object
+    _auctions_entry__auction_id__get_200_response_payload:
+      example:
+        auction: null
+      properties:
+        auction:
+          $ref: '#/components/schemas/auctionEntryExpanded'
+      type: object
+    _auctions_entry__auction_id__get_200_response:
+      example:
+        payload:
+          auction: null
+      properties:
+        payload:
+          $ref: '#/components/schemas/_auctions_entry__auction_id__get_200_response_payload'
+      type: object
+    _auctions_entry__auction_id__bids_get_200_response_payload:
+      example:
+        bids:
+        - created: 2000-01-23T04:56:07.000+00:00
+          id: id
+          user: user
+          value: 0
+          updated: 2000-01-23T04:56:07.000+00:00
+          auction: auction
+        - created: 2000-01-23T04:56:07.000+00:00
+          id: id
+          user: user
+          value: 0
+          updated: 2000-01-23T04:56:07.000+00:00
+          auction: auction
+      properties:
+        bids:
+          items:
+            $ref: '#/components/schemas/bid'
+          type: array
+      type: object
+    _auctions_entry__auction_id__bids_get_200_response:
+      example:
+        include:
+          auction: null
+        payload:
+          bids:
+          - created: 2000-01-23T04:56:07.000+00:00
+            id: id
+            user: user
+            value: 0
+            updated: 2000-01-23T04:56:07.000+00:00
+            auction: auction
+          - created: 2000-01-23T04:56:07.000+00:00
+            id: id
+            user: user
+            value: 0
+            updated: 2000-01-23T04:56:07.000+00:00
+            auction: auction
+      properties:
+        payload:
+          $ref: '#/components/schemas/_auctions_entry__auction_id__bids_get_200_response_payload'
+        include:
+          $ref: '#/components/schemas/_auctions_entry__auction_id__get_200_response_payload'
+      required:
+      - payload
+      type: object
+    _auctions_create_post_request_item:
+      oneOf:
+      - $ref: '#/components/schemas/rivenAuction'
+      - $ref: '#/components/schemas/lichAuction'
+      - $ref: '#/components/schemas/kubrowAuction'
+    _auctions_create_post_request:
+      properties:
+        note:
+          maxLength: 200
+          minLength: 0
+          type: string
+        starting_price:
+          maximum: 900000
+          minimum: 1
+          type: integer
+        buyout_price:
+          description: "If you want ∞ as buyout price, set this to `null`"
+          maximum: 900000
+          minimum: 1
+          nullable: true
+          type: integer
+        minimal_increment:
+          default: 1
+          description: "Minimum delta between the bids, Not appliable right now"
+          maximum: 900000
+          minimum: 1
+          type: integer
+        minimal_reputation:
+          default: 0
+          description: Minimum reputation requirenment for participation in this auction.
+          maximum: 1000
+          minimum: 1
+          type: integer
+        private:
+          default: false
+          description: is this auction is private and only accesibly by direct link.
+          type: boolean
+        item:
+          $ref: '#/components/schemas/_auctions_create_post_request_item'
+      required:
+      - buyout_price
+      - item
+      - starting_price
+      type: object
+    _auctions_create_post_200_response_payload:
+      example:
+        auction:
+          owner: owner
+          top_bid: 5
+          note: note
+          private: true
+          item: null
+          visible: true
+          is_direct_sell: true
+          created: 2000-01-23T04:56:07.000+00:00
+          platform: switch
+          is_marked_for: null
+          buyout_price: 1
+          minimal_increment: 5
+          winner: winner
+          starting_price: 1
+          marked_operation_at: 2000-01-23T04:56:07.000+00:00
+          note_raw: note_raw
+          closed: true
+          id: id
+          updated: 2000-01-23T04:56:07.000+00:00
+          minimal_reputation: 0
+      properties:
+        auction:
+          $ref: '#/components/schemas/auctionEntry'
+      type: object
+    _auctions_create_post_200_response:
+      example:
+        payload:
+          auction:
+            owner: owner
+            top_bid: 5
+            note: note
+            private: true
+            item: null
+            visible: true
+            is_direct_sell: true
+            created: 2000-01-23T04:56:07.000+00:00
+            platform: switch
+            is_marked_for: null
+            buyout_price: 1
+            minimal_increment: 5
+            winner: winner
+            starting_price: 1
+            marked_operation_at: 2000-01-23T04:56:07.000+00:00
+            note_raw: note_raw
+            closed: true
+            id: id
+            updated: 2000-01-23T04:56:07.000+00:00
+            minimal_reputation: 0
+      properties:
+        payload:
+          $ref: '#/components/schemas/_auctions_create_post_200_response_payload'
+      type: object
+    _auctions_search_type_riven_get_200_response_payload:
+      example:
+        auctions:
+        - null
+        - null
+      properties:
+        auctions:
+          items:
+            $ref: '#/components/schemas/auctionEntryExpanded'
+          type: array
+      type: object
+    _auctions_search_type_riven_get_200_response:
+      example:
+        payload:
+          auctions:
+          - null
+          - null
+      properties:
+        payload:
+          $ref: '#/components/schemas/_auctions_search_type_riven_get_200_response_payload'
+      type: object
+    _lich_weapons_get_200_response_payload:
+      example:
+        weapons:
+        - url_name: kuva_bramma
+          thumb: icons/en/thumbs/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.128x128.png
+          icon: icons/en/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.png
+          item_name: item_name
+          id: 5e98559a3d9f64005cd702eb
+          icon_format: land
+        - url_name: kuva_bramma
+          thumb: icons/en/thumbs/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.128x128.png
+          icon: icons/en/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.png
+          item_name: item_name
+          id: 5e98559a3d9f64005cd702eb
+          icon_format: land
+      properties:
+        weapons:
+          items:
+            $ref: '#/components/schemas/nemesisWeapon'
+          type: array
+      type: object
+    _lich_weapons_get_200_response:
+      example:
+        payload:
+          weapons:
+          - url_name: kuva_bramma
+            thumb: icons/en/thumbs/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.128x128.png
+            icon: icons/en/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.png
+            item_name: item_name
+            id: 5e98559a3d9f64005cd702eb
+            icon_format: land
+          - url_name: kuva_bramma
+            thumb: icons/en/thumbs/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.128x128.png
+            icon: icons/en/kuva_bramma.eaf6bd5d4a8f1413764771719ca2cc27.png
+            item_name: item_name
+            id: 5e98559a3d9f64005cd702eb
+            icon_format: land
+      properties:
+        payload:
+          $ref: '#/components/schemas/_lich_weapons_get_200_response_payload'
+      type: object
+    _lich_ephemeras_get_200_response_payload:
+      example:
+        ephemeras:
+        - url_name: vengeful_shockwave
+          thumb: icons/en/thumbs/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.128x128.png
+          icon: icons/en/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.png
+          animation_format: land
+          item_name: Vengeful Shockwave Ephemera
+          id: 5e9854b93d9f64004f9136bd
+          icon_format: port
+          animation: animations/vengeful_shockwave.971437bf48dec307ed268285b8798228.gif
+          element: null
+        - url_name: vengeful_shockwave
+          thumb: icons/en/thumbs/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.128x128.png
+          icon: icons/en/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.png
+          animation_format: land
+          item_name: Vengeful Shockwave Ephemera
+          id: 5e9854b93d9f64004f9136bd
+          icon_format: port
+          animation: animations/vengeful_shockwave.971437bf48dec307ed268285b8798228.gif
+          element: null
+      properties:
+        ephemeras:
+          items:
+            $ref: '#/components/schemas/nemesisEphemera'
+          type: array
+      type: object
+    _lich_ephemeras_get_200_response:
+      example:
+        payload:
+          ephemeras:
+          - url_name: vengeful_shockwave
+            thumb: icons/en/thumbs/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.128x128.png
+            icon: icons/en/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.png
+            animation_format: land
+            item_name: Vengeful Shockwave Ephemera
+            id: 5e9854b93d9f64004f9136bd
+            icon_format: port
+            animation: animations/vengeful_shockwave.971437bf48dec307ed268285b8798228.gif
+            element: null
+          - url_name: vengeful_shockwave
+            thumb: icons/en/thumbs/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.128x128.png
+            icon: icons/en/vengeful_shockwave.6020e14eb5e9516d4bc6ccf5023c864c.png
+            animation_format: land
+            item_name: Vengeful Shockwave Ephemera
+            id: 5e9854b93d9f64004f9136bd
+            icon_format: port
+            animation: animations/vengeful_shockwave.971437bf48dec307ed268285b8798228.gif
+            element: null
+      properties:
+        payload:
+          $ref: '#/components/schemas/_lich_ephemeras_get_200_response_payload'
+      type: object
+    _lich_quirks_get_200_response_payload:
+      example:
+        quirks:
+        - url_name: poor_sense_of_balance
+          description: The lich will retreat after kneeling down and without stabbing
+          item_name: Poor Sense of Balance
+          id: 5e9855a43d9f6400697e895c
+          group: default
+        - url_name: poor_sense_of_balance
+          description: The lich will retreat after kneeling down and without stabbing
+          item_name: Poor Sense of Balance
+          id: 5e9855a43d9f6400697e895c
+          group: default
+      properties:
+        quirks:
+          items:
+            $ref: '#/components/schemas/nemesisQuirk'
+          type: array
+      type: object
+    _lich_quirks_get_200_response:
+      example:
+        payload:
+          quirks:
+          - url_name: poor_sense_of_balance
+            description: The lich will retreat after kneeling down and without stabbing
+            item_name: Poor Sense of Balance
+            id: 5e9855a43d9f6400697e895c
+            group: default
+          - url_name: poor_sense_of_balance
+            description: The lich will retreat after kneeling down and without stabbing
+            item_name: Poor Sense of Balance
+            id: 5e9855a43d9f6400697e895c
+            group: default
+      properties:
+        payload:
+          $ref: '#/components/schemas/_lich_quirks_get_200_response_payload'
+      type: object
+    _riven_items_get_200_response_payload:
+      example:
+        items:
+        - url_name: falcor
+          thumb: thumb
+          icon: icon
+          item_name: item_name
+          id: 5cf5724f9597e1019b1678c7
+          icon_format: land
+          riven_type: shotgun
+          group: primary
+        - url_name: falcor
+          thumb: thumb
+          icon: icon
+          item_name: item_name
+          id: 5cf5724f9597e1019b1678c7
+          icon_format: land
+          riven_type: shotgun
+          group: primary
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/rivenItem'
+          type: array
+      type: object
+    _riven_items_get_200_response:
+      example:
+        payload:
+          items:
+          - url_name: falcor
+            thumb: thumb
+            icon: icon
+            item_name: item_name
+            id: 5cf5724f9597e1019b1678c7
+            icon_format: land
+            riven_type: shotgun
+            group: primary
+          - url_name: falcor
+            thumb: thumb
+            icon: icon
+            item_name: item_name
+            id: 5cf5724f9597e1019b1678c7
+            icon_format: land
+            riven_type: shotgun
+            group: primary
+      properties:
+        payload:
+          $ref: '#/components/schemas/_riven_items_get_200_response_payload'
+      type: object
+    _riven_attributes_get_200_response_payload:
+      example:
+        attributes:
+        - url_name: ammo_maximum
+          prefix: Ampi
+          negative_only: false
+          effect: Ammo Maximum
+          search_only: true
+          id: 5c5ca81a96e8d2003834fe63
+          units: seconds
+          suffix: Bin
+          exclusive_to: kitgun
+          positive_is_negative: false
+          group: default
+        - url_name: ammo_maximum
+          prefix: Ampi
+          negative_only: false
+          effect: Ammo Maximum
+          search_only: true
+          id: 5c5ca81a96e8d2003834fe63
+          units: seconds
+          suffix: Bin
+          exclusive_to: kitgun
+          positive_is_negative: false
+          group: default
+      properties:
+        attributes:
+          items:
+            $ref: '#/components/schemas/rivenAttribute'
+          type: array
+      type: object
+    _riven_attributes_get_200_response:
+      example:
+        payload:
+          attributes:
+          - url_name: ammo_maximum
+            prefix: Ampi
+            negative_only: false
+            effect: Ammo Maximum
+            search_only: true
+            id: 5c5ca81a96e8d2003834fe63
+            units: seconds
+            suffix: Bin
+            exclusive_to: kitgun
+            positive_is_negative: false
+            group: default
+          - url_name: ammo_maximum
+            prefix: Ampi
+            negative_only: false
+            effect: Ammo Maximum
+            search_only: true
+            id: 5c5ca81a96e8d2003834fe63
+            units: seconds
+            suffix: Bin
+            exclusive_to: kitgun
+            positive_is_negative: false
+            group: default
+      properties:
+        payload:
+          $ref: '#/components/schemas/_riven_attributes_get_200_response_payload'
+      type: object
+    _locations_get_200_response_payload:
+      example:
+        locations:
+        - url_name: plains_of_eidolon
+          thumb: thumb
+          max_level: 6.027456183070403
+          system_name: Earth
+          icon: icon
+          node_name: Plains of Eidolon
+          id: 5a2feeb1c2c9e90cbdaa23d2
+          min_level: 0.8008281904610115
+        - url_name: plains_of_eidolon
+          thumb: thumb
+          max_level: 6.027456183070403
+          system_name: Earth
+          icon: icon
+          node_name: Plains of Eidolon
+          id: 5a2feeb1c2c9e90cbdaa23d2
+          min_level: 0.8008281904610115
+      properties:
+        locations:
+          items:
+            $ref: '#/components/schemas/Location'
+          type: array
+      type: object
+    _locations_get_200_response:
+      example:
+        payload:
+          locations:
+          - url_name: plains_of_eidolon
+            thumb: thumb
+            max_level: 6.027456183070403
+            system_name: Earth
+            icon: icon
+            node_name: Plains of Eidolon
+            id: 5a2feeb1c2c9e90cbdaa23d2
+            min_level: 0.8008281904610115
+          - url_name: plains_of_eidolon
+            thumb: thumb
+            max_level: 6.027456183070403
+            system_name: Earth
+            icon: icon
+            node_name: Plains of Eidolon
+            id: 5a2feeb1c2c9e90cbdaa23d2
+            min_level: 0.8008281904610115
+      properties:
+        payload:
+          $ref: '#/components/schemas/_locations_get_200_response_payload'
+      type: object
+    _npc_get_200_response_payload:
+      example:
+        npc:
+        - url_name: infested_corpus
+          thumb: thumb
+          icon: icon
+          name: Infested Corpus
+          id: 5a2feeb1c2c9e90cbdaa23d2
+        - url_name: infested_corpus
+          thumb: thumb
+          icon: icon
+          name: Infested Corpus
+          id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        npc:
+          items:
+            $ref: '#/components/schemas/Npc'
+          type: array
+      type: object
+    _npc_get_200_response:
+      example:
+        payload:
+          npc:
+          - url_name: infested_corpus
+            thumb: thumb
+            icon: icon
+            name: Infested Corpus
+            id: 5a2feeb1c2c9e90cbdaa23d2
+          - url_name: infested_corpus
+            thumb: thumb
+            icon: icon
+            name: Infested Corpus
+            id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        payload:
+          $ref: '#/components/schemas/_npc_get_200_response_payload'
+      type: object
+    _missions_get_200_response_payload:
+      example:
+        missions:
+        - url_name: void_storm
+          thumb: thumb
+          icon: icon
+          name: Void Storm
+          id: 5a2feeb1c2c9e90cbdaa23d2
+        - url_name: void_storm
+          thumb: thumb
+          icon: icon
+          name: Void Storm
+          id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        missions:
+          items:
+            $ref: '#/components/schemas/Mission'
+          type: array
+      type: object
+    _missions_get_200_response:
+      example:
+        payload:
+          missions:
+          - url_name: void_storm
+            thumb: thumb
+            icon: icon
+            name: Void Storm
+            id: 5a2feeb1c2c9e90cbdaa23d2
+          - url_name: void_storm
+            thumb: thumb
+            icon: icon
+            name: Void Storm
+            id: 5a2feeb1c2c9e90cbdaa23d2
+      properties:
+        payload:
+          $ref: '#/components/schemas/_missions_get_200_response_payload'
+      type: object
+    currentUser_patreon_profile:
+      example:
+        patreon_founder: true
+        subscription: true
+        patreon_badge: bronze
+      properties:
+        patreon_founder:
+          type: boolean
+        subscription:
+          type: boolean
+        patreon_badge:
+          enum:
+          - bronze
+          - gold
+          - silver
+          - platinum
+          type: string
+      type: object
+    currentUser_linked_accounts:
+      example:
+        steam_profile: true
+        xbox_profile: true
+        patreon_profile: true
+      properties:
+        steam_profile:
+          type: boolean
+        patreon_profile:
+          type: boolean
+        xbox_profile:
+          type: boolean
+      type: object
+    rivenAuction_attributes_inner:
+      properties:
+        positive:
+          type: boolean
+        value:
+          type: integer
+        url_name:
+          type: string
+      type: object
+    langInItem_drop_inner:
+      properties:
+        name:
+          description: translated name of the location \\ item
+          type: string
+        link:
+          description: link to the internal or extarnal source with information about
+            that location
+          nullable: true
+          type: string
+      type: object
+    ItemInOrder_allOf_en:
+      properties:
+        item_name:
+          description: Name of the item
+          example: Axi A1 Relic
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_ru:
+      properties:
+        item_name:
+          description: Name of the item
+          example: Реликвия Акси A1
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_ko:
+      properties:
+        item_name:
+          description: Name of the item
+          example: 액시 A1 성유물
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_fr:
+      properties:
+        item_name:
+          description: Name of the item
+          example: Relique Axi A1
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_de:
+      properties:
+        item_name:
+          description: Name of the item
+          example: "Axi-relikt: A1"
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_zh_hant:
+      properties:
+        item_name:
+          description: Name of the item
+          example: 後紀 A1 遺物
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_zh_hans:
+      properties:
+        item_name:
+          description: Name of the item
+          example: 后纪 A1 遗物
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_pt:
+      properties:
+        item_name:
+          description: Name of the item
+          example: Relíquia Axi A1
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_es:
+      properties:
+        item_name:
+          description: Name of the item
+          example: Reliquia Axi A1
+          type: string
+      type: object
+      example: null
+    ItemInOrder_allOf_pl:
+      properties:
+        item_name:
+          description: Name of the item
+          example: Relikt Axi A1
+          type: string
+      type: object
+      example: null
+    DropsourceRelic_rates:
+      properties:
+        intact:
+          example: 11.0
+          type: number
+        exceptional:
+          example: 13.0
+          type: number
+        flawless:
+          example: 17.0
+          type: number
+        radiant:
+          example: 20.0
+          type: number
+      type: object
+    RelicDropData_rates:
+      properties:
+        intact:
+          description: chance to get an item from intact relic
+          example: 5
+          type: number
+        exceptional:
+          description: chance to get an item from exceptional relic
+          example: 5
+          type: number
+        flawless:
+          description: chance to get an item from flawless relic
+          example: 5
+          type: number
+        radiant:
+          description: chance to get an item from radiant relic
+          example: 5
+          type: number
+      type: object
+  securitySchemes:
+    CookieAuth:
+      in: cookie
+      name: JWT
+      type: apiKey
+    JWTHeader:
+      description: |
+        Value should be: `JWT <your jwt_code>`
+      in: header
+      name: Authorization
+      type: apiKey
+

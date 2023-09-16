@@ -10,6 +10,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saber.Common", "Saber.Common\Saber.Common.csproj", "{552E7422-5FF1-4EF3-9882-D0CB6177D863}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saber.Common.Services", "Saber.Common.Services\Saber.Common.Services.csproj", "{4FE7BE62-1160-4D51-9492-BADBF215D864}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarframeMarket", "Other\WarframeMarket\src\WarframeMarket\WarframeMarket.csproj", "{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +34,10 @@ Global
 		{4FE7BE62-1160-4D51-9492-BADBF215D864}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FE7BE62-1160-4D51-9492-BADBF215D864}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FE7BE62-1160-4D51-9492-BADBF215D864}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

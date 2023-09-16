@@ -114,6 +114,7 @@ namespace Saber.Bot
                 .AddSingleton<AudioService>()
                 .AddSingleton<YoutubeDlService>()
                 .AddSingleton<FileUploaderService>()
+                .AddSingleton<WarframeService>()
                 .AddTransient<ItemService>();
 
             collection.AddOpenAIService(settings => { settings.ApiKey = globalConfig["OpenAI:ApiKey"]; });
