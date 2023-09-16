@@ -9,5 +9,8 @@
   "Database": {
     "ConnectionString": ""
   },
+  "OpenAI": {
+    "ApiKey": ""
+  },
   "TempDir": "temp/"
 }

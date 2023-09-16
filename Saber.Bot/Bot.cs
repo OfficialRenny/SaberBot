@@ -18,6 +18,7 @@ using Saber.Common.AppSettings;
 using Microsoft.Extensions.Configuration;
 using Saber.Bot.Core;
 using Microsoft.EntityFrameworkCore;
+using OpenAI.Extensions;
 
 namespace Saber.Bot
 {
@@ -114,6 +115,9 @@ namespace Saber.Bot
                 .AddSingleton<YoutubeDlService>()
                 .AddSingleton<FileUploaderService>()
                 .AddTransient<ItemService>();
+
+            collection.AddOpenAIService(settings => { settings.ApiKey = globalConfig["OpenAI:ApiKey"]; });
+            collection.AddSingleton<OpenAiService>();
 
             return collection.BuildServiceProvider();
         }
