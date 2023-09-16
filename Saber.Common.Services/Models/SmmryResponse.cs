@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Saber.Bot.Commands.Models
+namespace Saber.Common.Services.Models
 {
     public class SmmryResponse
     {
@@ -18,7 +18,8 @@ namespace Saber.Bot.Commands.Models
         [JsonPropertyName("sm_api_title")]
         public string Title { get; set; } = string.Empty;
 
-        [JsonPropertyName("sm_api_content")] public string Content { get; set; } = string.Empty;
+        [JsonPropertyName("sm_api_content")]
+        public string Content { get; set; } = string.Empty;
 
         [JsonPropertyName("sm_api_keyword_array")]
         public string[] Keywords { get; set; } = new string[0];

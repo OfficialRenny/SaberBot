@@ -2,9 +2,9 @@
 using Discord.Commands;
 using Discord.Interactions;
 using RestSharp;
-using Saber.Bot.Commands.Models;
 using Saber.Bot.Core;
 using Saber.Common;
+using Saber.Common.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,58 +15,48 @@ namespace Saber.Bot.Commands.Interactions
 {
     public class SmmryCommandModule : ModuleBase<SocketCommandContext>
     {
-        private readonly Config _config;
-        private readonly RestClient _client;
-        public SmmryCommandModule(Config config, HttpClient httpClient)
+        private readonly SmmryService _service;
+        public SmmryCommandModule(SmmryService service)
         {
-            _config = config;
-            _client = new RestClient(httpClient, options: new RestClientOptions
-            {
-                BaseUrl = new Uri("https://api.smmry.com"),
-            });
+            _service = service;
         }
 
         [Command("smmry")]
         [Discord.Commands.Summary("Gets a summary of an article, powered by Smmry")]
-        public Task Smmry(string url, int length = 7)
+        public async Task Smmry(string url, int length = 7)
         {
             Uri? uri = new(url);
 
             if (uri == null)
-                return Task.CompletedTask;
+                return;
 
-            object parameters = new
+            var resp = await _service.GetSmmry(url, length);
+
+            if (resp == null || string.IsNullOrWhiteSpace(resp.Content))
             {
-                SM_API_KEY = _config["SmmryKey"],
-                SM_URL = url,
-                SM_LENGTH = length,
-            };
-
-            var resp = _client.GetJson<SmmryResponse>("/", parameters);
-
-            if (resp != null && !string.IsNullOrWhiteSpace(resp.Content))
-            {
-                string title = string.IsNullOrWhiteSpace(resp.Title) ? string.Empty : resp.Title + "\n\n";
-                return ReplyAsync($"```{title}{resp.Content}```");
+                await ReplyAsync($"Couldn't fetch a summary of the URL.");
+                return;
             }
 
-            return Task.CompletedTask;
+            string title = string.IsNullOrWhiteSpace(resp.Title) ? string.Empty : resp.Title + "\n\n";
+            var reply = $"```{title}{resp.Content}```";
+
+            if (reply.Length > 2000)
+            {
+                await ReplyAsync($"The summary is too long to send. ({reply.Length} characters)");
+                return;
+            }
+
+            await ReplyAsync(reply);
         }
     }
 
     public class SmmryInteractionModule : InteractionModuleBase<SocketInteractionContext>
     {
-        private readonly Config _config;
-
-        private readonly RestClient _client;
-
-        public SmmryInteractionModule(Config config, HttpClient httpClient)
+        private readonly SmmryService _service;
+        public SmmryInteractionModule(SmmryService service)
         {
-            _config = config;
-            _client = new RestClient(httpClient, options: new RestClientOptions
-            {
-                BaseUrl = new Uri("https://api.smmry.com"),
-            });
+            _service = service;
         }
 
         [SlashCommand("smmry", "Gets a summary of an article, powered by Smmry")]
@@ -84,17 +74,24 @@ namespace Saber.Bot.Commands.Interactions
 
             await DeferAsync();
 
-            var resp = await GetSmmry(url, length);
+            var resp = await _service.GetSmmry(url, length);
 
-            if (resp != null && !string.IsNullOrWhiteSpace(resp.Content))
+            if (resp == null || string.IsNullOrWhiteSpace(resp.Content))
             {
-                string title = string.IsNullOrWhiteSpace(resp.Title) ? string.Empty : resp.Title + "\n\n";
-                await FollowupAsync($"```{title}{resp.Content}```");
+                await FollowupAsync($"Couldn't fetch a summary of the URL.");
                 return;
             }
 
-            await FollowupAsync($"Couldn't fetch a summary of the URL.");
-            return;
+            string title = string.IsNullOrWhiteSpace(resp.Title) ? string.Empty : resp.Title + "\n\n";
+            var reply = $"```{title}{resp.Content}```";
+
+            if (reply.Length > 2000)
+            {
+                await FollowupAsync($"The summary is too long to send. ({reply.Length} characters)");
+                return;
+            }
+
+            await FollowupAsync(reply);
         }
 
         [MessageCommand("SMMRY")]
@@ -112,37 +109,24 @@ namespace Saber.Bot.Commands.Interactions
 
             var url = urls.First();
 
-            var resp = await GetSmmry(url);
+            var resp = await _service.GetSmmry(url);
 
-            if (resp != null && !string.IsNullOrWhiteSpace(resp.Content))
+            if (resp == null || string.IsNullOrWhiteSpace(resp.Content))
             {
-                string title = string.IsNullOrWhiteSpace(resp.Title) ? string.Empty : resp.Title + "\n\n";
-                await FollowupAsync($"```{title}{resp.Content}```");
+                await FollowupAsync($"Couldn't fetch a summary of the URL.");
                 return;
             }
 
-            await FollowupAsync($"Couldn't fetch a summary of the URL.");
-            return;
-        }
+            string title = string.IsNullOrWhiteSpace(resp.Title) ? string.Empty : resp.Title + "\n\n";
+            var reply = $"```{title}{resp.Content}```";
 
-        public async Task<SmmryResponse?> GetSmmry(string url, int? length = null)
-        {
-            Uri? uri = new(url);
-
-            if (uri == null)
-                return null;
-
-            Dictionary<string, object> parameters = new Dictionary<string, object>
+            if (reply.Length > 2000)
             {
-                { "SM_API_KEY",  _config["SmmryKey"] },
-                { "SM_URL",  url },
-            };
+                await FollowupAsync($"The summary is too long to send. ({reply.Length} characters)");
+                return;
+            }
 
-            if (length != null)
-                parameters.Add("SM_LENGTH", length.Value);
-
-            return await _client.GetJsonAsync<SmmryResponse>("/", parameters);
-
+            await FollowupAsync(reply);
         }
     }
 }
