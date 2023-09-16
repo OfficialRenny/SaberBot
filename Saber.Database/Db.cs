@@ -26,6 +26,9 @@ namespace Saber.Database
         public DbSet<ShopItem> ShopItems { get; set; }
         public DbSet<DiscordAward> DiscordAwards { get; set; }
 
+        public DbSet<OneLinerQuote> OneLiners { get; set; }
+
+
         public Db(DbContextOptions<Db> options) : base(options)
         {
         }

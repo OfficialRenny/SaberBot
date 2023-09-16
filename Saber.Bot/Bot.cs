@@ -114,6 +114,7 @@ namespace Saber.Bot
                 .AddSingleton<AudioService>()
                 .AddSingleton<YoutubeDlService>()
                 .AddSingleton<FileUploaderService>()
+                //.AddSingleton<OneLinerService>()
                 .AddSingleton<WarframeService>()
                 .AddTransient<ItemService>();
 

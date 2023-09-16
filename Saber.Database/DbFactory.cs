@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 
 namespace Saber.Database
 {
-    internal class DbFactory : IDesignTimeDbContextFactory<Db>
+    public class DbFactory : IDesignTimeDbContextFactory<Db>, IDbContextFactory<Db>
     {
         public Db CreateDbContext(string[] args)
+            => CreateDbContext();
+
+        public Db CreateDbContext()
         {
             var config = new Common.Config();
 

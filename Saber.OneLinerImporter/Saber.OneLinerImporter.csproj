@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Inputs\**" />
+    <EmbeddedResource Remove="Inputs\**" />
+    <None Remove="Inputs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Saber.Common\Saber.Common.csproj" />
+    <ProjectReference Include="..\Saber.Database\Saber.Database.csproj" />
+  </ItemGroup>
+
+</Project>
