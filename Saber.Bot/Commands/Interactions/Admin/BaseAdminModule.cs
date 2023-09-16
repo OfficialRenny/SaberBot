@@ -45,12 +45,33 @@ namespace Saber.Bot.Commands.Interactions.Admin
             var d = DeferAsync(true);
 
             var userProfile = _provider.GetUserProfile(user.Id);
-
-            userProfile.IsAdmin = !userProfile.IsAdmin;
-            _provider.DbCtx.SaveChanges();
+            _provider.ModifyUserProfile(userProfile, u => u.IsAdmin = !u.IsAdmin);
 
             await d;
             await FollowupAsync($"User {user.Username} is now {(userProfile.IsAdmin ? "an admin" : "not an admin")}.");
+        }
+
+        [SlashCommand("toggleaccessrole", "Toggles access to a specific role for a user.")]
+        public async Task ToggleAccessRole(IUser user, Database.Models.Profile.AccessRoles roles)
+        {
+            var d = DeferAsync(true);
+
+            var userProfile = _provider.GetUserProfile(user.Id);
+            _provider.ModifyUserProfile(userProfile, u => u.AccessRoles ^= roles);
+
+            await d;
+            await FollowupAsync($"User {user.Username} now {(userProfile.AccessRoles.HasFlag(roles) ? "has" : "does not have")} access to {roles}.");
+        }
+
+        [SlashCommand("listaccessroles", "Lists all access roles for a user.")]
+        public async Task ListAccessRoles(IUser user)
+        {
+            var d = DeferAsync(true);
+
+            var userProfile = _provider.GetUserProfile(user.Id);
+
+            await d;
+            await FollowupAsync($"User {user.Username} has access to {userProfile.AccessRoles}.");
         }
     }
 }

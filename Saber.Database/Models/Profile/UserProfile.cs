@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,6 +17,9 @@ namespace Saber.Database.Models.Profile
         public string LastKnownDisplayName { get; set; } = string.Empty;
         public int TotalMessagesSent { get; set; } = 0;
         public int TotalCommandsExecuted { get; set; } = 0;
+
+        [DefaultValue(AccessRoles.DEFAULT)]
+        public AccessRoles AccessRoles { get; set; } = AccessRoles.DEFAULT;
 
         public int Xp { get; set; } = 0;
 
@@ -50,5 +54,15 @@ namespace Saber.Database.Models.Profile
 
             return t1 + t2;
         }
+    }
+
+    [Flags]
+    public enum AccessRoles : ulong
+    {
+        OpenAiTextGen = 1,
+        OpenAiImageGen = 2,
+        YoutubeDl = 4,
+        
+        DEFAULT = OpenAiTextGen | YoutubeDl,
     }
 }

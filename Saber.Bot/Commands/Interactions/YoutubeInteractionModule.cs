@@ -15,6 +15,7 @@ using Saber.Database;
 using Saber.Database.Providers;
 using System.IO;
 using System.Security.Policy;
+using Saber.Bot.Commands.Attributes;
 
 namespace Saber.Bot.Commands.Interactions
 {
@@ -86,24 +87,28 @@ namespace Saber.Bot.Commands.Interactions
                 return FollowupAsync("Task failed successfully. (Couldn't find any search results for some reason...)");
         }
 
+        [HasAccessFlag(Database.Models.Profile.AccessRoles.YoutubeDl)]
         [MessageCommand("YTDL - Audio")]
         public async Task DownloadAsAudio(IMessage message)
         {
             await DownloadFile(message, DownloadType.Audio, false);
         }
 
+        [HasAccessFlag(Database.Models.Profile.AccessRoles.YoutubeDl)]
         [MessageCommand("YTDL - Video")]
         public async Task DownloadAsVideo(IMessage message)
         {
             await DownloadFile(message, DownloadType.Video, false);
         }
 
+        [HasAccessFlag(Database.Models.Profile.AccessRoles.YoutubeDl)]
         [MessageCommand("YTDL - Video (Private)")]
         public async Task DownloadAsVideoEphemeral(IMessage message)
         {
             await DownloadFile(message, DownloadType.Video, true);
         }
 
+        [HasAccessFlag(Database.Models.Profile.AccessRoles.YoutubeDl)]
         [MessageCommand("YTDL - Audio (Private)")]
         public async Task DownloadAsAudioEphemeral(IMessage message)
         {
