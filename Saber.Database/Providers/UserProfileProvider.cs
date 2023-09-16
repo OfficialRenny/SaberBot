@@ -30,7 +30,7 @@ namespace Saber.Database.Providers
         }
 
         public UserProfile CreateProfile(IUser user)
-            => CreateProfile(user.Id, user.Username);
+            => CreateProfile(user.Id, user.GlobalName);
 
         public UserProfile CreateProfile(ulong discordId, string username = "")
         {
@@ -41,6 +41,32 @@ namespace Saber.Database.Providers
             if (!string.IsNullOrEmpty(username))
                 profile.LastKnownDisplayName = username;
             DbCtx.UserProfiles.Add(profile);
+            DbCtx.SaveChanges();
+            return profile;
+        }
+
+        public UserProfile GetOrCreateProfile(IUser user)
+            => GetOrCreateProfile(user.Id, user.GlobalName);
+
+        public UserProfile GetOrCreateProfile(ulong discordId, string username = "")
+        {
+            var profile = GetUserProfile(discordId);
+            profile ??= CreateProfile(discordId, username);
+            return profile;
+        }
+
+        public UserProfile ModifyUserProfile(IUser user, Action<UserProfile> action)
+            => ModifyUserProfile(user.Id, action);
+
+        public UserProfile ModifyUserProfile(ulong discordId, Action<UserProfile> action)
+        {
+            var profile = GetOrCreateProfile(discordId);
+            return ModifyUserProfile(profile, action);
+        }
+
+        public UserProfile ModifyUserProfile(UserProfile profile, Action<UserProfile> action)
+        {
+            action(profile);
             DbCtx.SaveChanges();
             return profile;
         }

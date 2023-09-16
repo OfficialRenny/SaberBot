@@ -30,19 +30,33 @@ namespace Saber.Commands.Interactions
         {
             await DeferAsync();
 
+            var user = _userProfileProvider.GetUserProfile(Context.User.Id);
+
             var items = _itemService.GetOwnedItems(Context.User.Id);
 
             var embed = new EmbedBuilder()
-                .WithTitle($"{Context.User.Username}'s Inventory")
+                .WithThumbnailUrl(Context.User.GetAvatarUrl())
+                .WithTitle($"{Context.User.GlobalName}'s Inventory")
                 .WithColor(Color.Blue)
-                .WithDescription($"You have {items.Count()} items in your inventory.");
+                .WithDescription($"You have {items.Count()} items in your inventory.")
+                .AddField("Currency:", user.Inventory.Currency);
 
             foreach (var item in items)
             {
                 embed.AddField($"{item.Item.Name}", $"{item.Quantity}x Owned", true);
             }
 
-            await FollowupAsync(embed: embed.Build());
+            var shopItems = _itemService.GetShopItems();
+
+            var storeEmbed = new EmbedBuilder()
+                .WithColor(Color.DarkBlue)
+                .WithTitle("Shop");
+            foreach (var item in shopItems.OrderBy(x => x.Price))
+            {
+                storeEmbed.AddField($"{item.Item.Name}", $"{item.Price} points", true);
+            }
+
+            await FollowupAsync(embeds: new[] { embed.Build(), storeEmbed.Build() });
         }
 
         [SlashCommand("give", "Gift a user a Discord Award/Item from your inventory.")]
@@ -120,6 +134,12 @@ namespace Saber.Commands.Interactions
                 return Task.CompletedTask;
             }
 
+            if (!item.IsInfinite && item.Stock < quantity)
+            {
+                FollowupAsync($"There is not enough stock of this item.");
+                return Task.CompletedTask;
+            }
+
             if (item.Price * quantity > userProfile.Inventory.Currency)
             {
                 FollowupAsync($"You don't have enough points to buy this item.");
@@ -127,6 +147,12 @@ namespace Saber.Commands.Interactions
             }
 
             userProfile.Inventory.Currency -= item.Price * quantity;
+            _userProfileProvider.Save();
+
+            if (!item.IsInfinite)
+            {
+                _itemService.ModifyShopItem(item.Item.Id, item => item.Stock -= quantity);
+            }
             var ownedItem = _itemService.ModifyOwnedItem(userProfile.DiscordId, item.Item.Id, item => item.Quantity += quantity);
 
             var embed = new EmbedBuilder()

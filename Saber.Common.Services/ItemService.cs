@@ -36,6 +36,33 @@ namespace Saber.Common.Services
             .Include(s => s.Item)
             .FirstOrDefault(s => s.Id == itemId);
 
+        public ShopItem CreateShopItem(ShopItem item)
+        {
+            _db.ShopItems.Add(item);
+            _db.SaveChanges();
+            return item;
+        }
+
+        public ShopItem ModifyShopItem(string itemId, Action<ShopItem> action)
+            => ModifyShopItem(new Guid(itemId), action);
+
+        public ShopItem ModifyShopItem(Guid itemId, Action<ShopItem> action)
+        {
+            var shopItem = GetShopItem(itemId);
+            if (shopItem == null)
+                throw new Exception($"Shop item with id {itemId} does not exist.");
+            
+            return ModifyShopItem(shopItem, action);
+        }
+
+        public ShopItem ModifyShopItem(ShopItem item, Action<ShopItem> action)
+        {
+            action(item);
+            _db.SaveChanges();
+
+            return item;
+        }
+
         public Inventory GetInventory(ulong discordId)
         {
             return
@@ -74,8 +101,7 @@ namespace Saber.Common.Services
         public OwnedItem GetOrCreateOwnedItem(ulong discordId, Guid itemId)
         {
             var ownedItem = GetOwnedItem(discordId, itemId);
-            if (ownedItem == null)
-                ownedItem = CreateOwnedItem(discordId, itemId);
+            ownedItem ??= CreateOwnedItem(discordId, itemId);
             return ownedItem;
         }
 
