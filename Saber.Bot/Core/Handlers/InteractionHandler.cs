@@ -70,7 +70,7 @@ namespace Saber.Bot.Core.Handlers
         private async Task HandleInteractionAsync(SocketInteraction interaction)
         {
             UserProfile user = _userProfileProvider.GetUserProfile(interaction.User.Id);
-            user.LastKnownDisplayName = interaction.User.Username;
+            user.LastKnownDisplayName = interaction.User.GlobalName;
             _userProfileProvider.Save();
 
             var context = new SocketInteractionContext(_client, interaction);

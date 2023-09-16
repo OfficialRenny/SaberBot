@@ -46,10 +46,8 @@ namespace Saber.Bot.Core.Handlers
             var message = messageParam as SocketUserMessage;
             if (message == null || message.Author.IsBot) return;
 
-            UserProfile user = _userProfileProvider.GetUserProfile(message.Author.Id);
-            if (user == null)
-                user = _userProfileProvider.CreateProfile(message.Author.Id, message.Author.Username);
-            user.LastKnownDisplayName = message.Author.Username;
+            UserProfile user = _userProfileProvider.GetOrCreateProfile(message.Author.Id);
+            user.LastKnownDisplayName = message.Author.GlobalName;
             user.IncrementMessagesSent();
             _userProfileProvider.Save();
 
@@ -59,8 +57,7 @@ namespace Saber.Bot.Core.Handlers
             {
                 IGuild guild = ((SocketGuildChannel)message.Channel).Guild;
                 var dbGuild = _guildProvider.GetGuild(guild.Id);
-                if (dbGuild == null)
-                    dbGuild = _guildProvider.CreateGuild(guild);
+                dbGuild ??= _guildProvider.CreateGuild(guild);
 
                 prefix = dbGuild.Prefix;
             }
