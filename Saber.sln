@@ -5,11 +5,12 @@ VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saber.Bot", "Saber.Bot\Saber.Bot.csproj", "{C2A4AD53-72BE-472D-9996-E741FF89E477}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saber.Database", "Saber.Database\Saber.Database.csproj", "{DE3D67DB-639D-4CC9-9DDB-9CBB8E0B6779}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saber.Database", "Saber.Database\Saber.Database.csproj", "{DE3D67DB-639D-4CC9-9DDB-9CBB8E0B6779}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saber.Common", "Saber.Common\Saber.Common.csproj", "{552E7422-5FF1-4EF3-9882-D0CB6177D863}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saber.Common.Services", "Saber.Common.Services\Saber.Common.Services.csproj", "{4FE7BE62-1160-4D51-9492-BADBF215D864}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saber.Common.Services", "Saber.Common.Services\Saber.Common.Services.csproj", "{4FE7BE62-1160-4D51-9492-BADBF215D864}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarframeMarket", "Other\WarframeMarket\src\WarframeMarket\WarframeMarket.csproj", "{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}"
 EndProject
 Global

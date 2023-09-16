@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -10,12 +10,24 @@
     <PackageReference Include="Betalgo.OpenAI" Version="7.0.0" />
     <PackageReference Include="CliWrap" Version="3.6.4" />
     <PackageReference Include="Discord.Net" Version="3.11.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.61.0.3106" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.61.0.3113" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016" />
+    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00016" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="7.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NSwag.ApiDescription.Client" Version="13.19.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="RestSharp" Version="110.2.0" />
     <PackageReference Include="YoutubeDLSharp" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Other\WarframeMarket\src\WarframeMarket\WarframeMarket.csproj" />
     <ProjectReference Include="..\Saber.Common\Saber.Common.csproj" />
     <ProjectReference Include="..\Saber.Database\Saber.Database.csproj" />
   </ItemGroup>
