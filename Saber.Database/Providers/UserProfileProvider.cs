@@ -16,10 +16,10 @@ namespace Saber.Database.Providers
         {
         }
 
-        public UserProfile GetUserProfile(IUser user)
+        public UserProfile? GetUserProfile(IUser user)
             => GetUserProfile(user.Id);
 
-        public UserProfile GetUserProfile(ulong discordId)
+        public UserProfile? GetUserProfile(ulong discordId)
         {
             var profile = 
                 DbCtx.UserProfiles

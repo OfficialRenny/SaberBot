@@ -17,10 +17,7 @@ namespace Saber.Bot.Commands.Attributes
             var provider = services.GetRequiredService<UserProfileProvider>();
             var user = provider.GetUserProfile(context.User.Id);
 
-            if (user != null && user.IsAdmin)
-                return Task.FromResult(PreconditionResult.FromSuccess());
-            else
-                return Task.FromResult(PreconditionResult.FromError("You must be an admin to use this command."));
+            return Task.FromResult(user is { IsAdmin: true } ? PreconditionResult.FromSuccess() : PreconditionResult.FromError("You must be an admin to use this command."));
         }
     }
 }

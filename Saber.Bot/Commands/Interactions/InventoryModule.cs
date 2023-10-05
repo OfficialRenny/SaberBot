@@ -30,9 +30,9 @@ namespace Saber.Commands.Interactions
         {
             await DeferAsync();
 
-            var user = _userProfileProvider.GetUserProfile(Context.User.Id);
+            var user = _userProfileProvider.GetOrCreateProfile(Context.User.Id);
 
-            var items = _itemService.GetOwnedItems(Context.User.Id);
+            var items = _itemService.GetOwnedItems(Context.User.Id).ToList();
 
             var embed = new EmbedBuilder()
                 .WithThumbnailUrl(Context.User.GetAvatarUrl())
@@ -71,7 +71,7 @@ namespace Saber.Commands.Interactions
             bool notifyRecipient = true)
         {
             var d = DeferAsync(true);
-            var userProfile = _userProfileProvider.GetUserProfile(Context.User.Id);
+            var userProfile = _userProfileProvider.GetOrCreateProfile(Context.User.Id);
             
             var baseItem = _itemService.GetItem(itemId);
             if (baseItem == null)
@@ -123,9 +123,9 @@ namespace Saber.Commands.Interactions
             string itemId,
             int quantity = 1)
         {
-            var d = DeferAsync(true);
+            DeferAsync(true);
 
-            var userProfile = _userProfileProvider.GetUserProfile(Context.User.Id);
+            var userProfile = _userProfileProvider.GetOrCreateProfile(Context.User.Id);
             var item = _itemService.GetShopItem(itemId);
 
             if (item == null)

@@ -44,7 +44,7 @@ namespace Saber.Bot.Commands.Interactions.Admin
         {
             var d = DeferAsync(true);
 
-            var userProfile = _provider.GetUserProfile(user.Id);
+            var userProfile = _provider.GetOrCreateProfile(user.Id);
             _provider.ModifyUserProfile(userProfile, u => u.IsAdmin = !u.IsAdmin);
 
             await d;
@@ -56,7 +56,7 @@ namespace Saber.Bot.Commands.Interactions.Admin
         {
             var d = DeferAsync(true);
 
-            var userProfile = _provider.GetUserProfile(user.Id);
+            var userProfile = _provider.GetOrCreateProfile(user.Id);
             _provider.ModifyUserProfile(userProfile, u => u.AccessRoles ^= roles);
 
             await d;
@@ -68,7 +68,7 @@ namespace Saber.Bot.Commands.Interactions.Admin
         {
             var d = DeferAsync(true);
 
-            var userProfile = _provider.GetUserProfile(user.Id);
+            var userProfile = _provider.GetOrCreateProfile(user.Id);
 
             await d;
             await FollowupAsync($"User {user.Username} has access to {userProfile.AccessRoles}.");
