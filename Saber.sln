@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Saber.Common.Services", "Sa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarframeMarket", "Other\WarframeMarket\src\WarframeMarket\WarframeMarket.csproj", "{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Destiny", "Other\Destiny\src\Destiny\Destiny.csproj", "{AF74AC58-925C-4980-9C8E-481134717D7D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1DB5FF9C-AB70-44CF-9C20-9EA304DA7CB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF74AC58-925C-4980-9C8E-481134717D7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF74AC58-925C-4980-9C8E-481134717D7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF74AC58-925C-4980-9C8E-481134717D7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF74AC58-925C-4980-9C8E-481134717D7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

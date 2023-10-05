@@ -1,0 +1,18 @@
+# Destiny.Model.DestinyEntitiesCharactersDestinyCharacterProgressionComponent
+This component returns anything that could be considered \"Progression\" on a user: data where the user is gaining levels, reputation, completions, rewards, etc...
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Progressions** | [**Dictionary&lt;string, DestinyDestinyProgression&gt;**](DestinyDestinyProgression.md) | A Dictionary of all known progressions for the Character, keyed by the Progression&#39;s hash.  Not all progressions have user-facing data, but those who do will have that data contained in the DestinyProgressionDefinition. | [optional] 
+**Factions** | [**Dictionary&lt;string, DestinyProgressionDestinyFactionProgression&gt;**](DestinyProgressionDestinyFactionProgression.md) | A dictionary of all known Factions, keyed by the Faction&#39;s hash. It contains data about this character&#39;s status with the faction. | [optional] 
+**Milestones** | [**Dictionary&lt;string, DestinyMilestonesDestinyMilestone&gt;**](DestinyMilestonesDestinyMilestone.md) | Milestones are related to the simple progressions shown in the game, but return additional and hopefully helpful information for users about the specifics of the Milestone&#39;s status. | [optional] 
+**Quests** | [**List&lt;DestinyQuestsDestinyQuestStatus&gt;**](DestinyQuestsDestinyQuestStatus.md) | If the user has any active quests, the quests&#39; statuses will be returned here.   Note that quests have been largely supplanted by Milestones, but that doesn&#39;t mean that they won&#39;t make a comeback independent of milestones at some point.   (Fun fact: quests came back as I feared they would, but we never looped back to populate this... I&#39;m going to put that in the backlog.) | [optional] 
+**UninstancedItemObjectives** | **Dictionary&lt;string, List&lt;DestinyQuestsDestinyObjectiveProgress&gt;&gt;** | Sometimes, you have items in your inventory that don&#39;t have instances, but still have Objective information. This provides you that objective information for uninstanced items.   This dictionary is keyed by the item&#39;s hash: which you can use to look up the name and description for the overall task(s) implied by the objective. The value is the list of objectives for this item, and their statuses. | [optional] 
+**UninstancedItemPerks** | [**Dictionary&lt;string, DestinyEntitiesItemsDestinyItemPerksComponent&gt;**](DestinyEntitiesItemsDestinyItemPerksComponent.md) | Sometimes, you have items in your inventory that don&#39;t have instances, but still have perks (for example: Trials passage cards). This gives you the perk information for uninstanced items.  This dictionary is keyed by item hash, which you can use to look up the corresponding item definition. The value is the list of perks states for the item. | [optional] 
+**Checklists** | **Dictionary&lt;string, Dictionary&lt;string, bool&gt;&gt;** | The set of checklists that can be examined for this specific character, keyed by the hash identifier of the Checklist (DestinyChecklistDefinition)  For each checklist returned, its value is itself a Dictionary keyed by the checklist&#39;s hash identifier with the value being a boolean indicating if it&#39;s been discovered yet. | [optional] 
+**SeasonalArtifact** | [**DestinyArtifactsDestinyArtifactCharacterScoped**](DestinyArtifactsDestinyArtifactCharacterScoped.md) |  | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+

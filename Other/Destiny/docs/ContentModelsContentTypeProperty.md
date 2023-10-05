@@ -1,0 +1,51 @@
+# Destiny.Model.ContentModelsContentTypeProperty
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Name** | **string** |  | [optional] 
+**RootPropertyName** | **string** |  | [optional] 
+**ReadableName** | **string** |  | [optional] 
+**Value** | **string** |  | [optional] 
+**PropertyDescription** | **string** |  | [optional] 
+**Localizable** | **bool** |  | [optional] 
+**Fallback** | **bool** |  | [optional] 
+**Enabled** | **bool** |  | [optional] 
+**Order** | **int** |  | [optional] 
+**Visible** | **bool** |  | [optional] 
+**IsTitle** | **bool** |  | [optional] 
+**Required** | **bool** |  | [optional] 
+**MaxLength** | **int** |  | [optional] 
+**MaxByteLength** | **int** |  | [optional] 
+**MaxFileSize** | **int** |  | [optional] 
+**Regexp** | **string** |  | [optional] 
+**ValidateAs** | **string** |  | [optional] 
+**RssAttribute** | **string** |  | [optional] 
+**VisibleDependency** | **string** |  | [optional] 
+**VisibleOn** | **string** |  | [optional] 
+**Datatype** | **int** |  | [optional] 
+**Attributes** | **Dictionary&lt;string, string&gt;** |  | [optional] 
+**ChildProperties** | [**List&lt;ContentModelsContentTypeProperty&gt;**](ContentModelsContentTypeProperty.md) |  | [optional] 
+**ContentTypeAllowed** | **string** |  | [optional] 
+**BindToProperty** | **string** |  | [optional] 
+**BoundRegex** | **string** |  | [optional] 
+**RepresentationSelection** | **Dictionary&lt;string, string&gt;** |  | [optional] 
+**DefaultValues** | [**List&lt;ContentModelsContentTypeDefaultValue&gt;**](ContentModelsContentTypeDefaultValue.md) |  | [optional] 
+**IsExternalAllowed** | **bool** |  | [optional] 
+**PropertySection** | **string** |  | [optional] 
+**Weight** | **int** |  | [optional] 
+**Entitytype** | **string** |  | [optional] 
+**IsCombo** | **bool** |  | [optional] 
+**SuppressProperty** | **bool** |  | [optional] 
+**LegalContentTypes** | **List&lt;string&gt;** |  | [optional] 
+**RepresentationValidationString** | **string** |  | [optional] 
+**MinWidth** | **int** |  | [optional] 
+**MaxWidth** | **int** |  | [optional] 
+**MinHeight** | **int** |  | [optional] 
+**MaxHeight** | **int** |  | [optional] 
+**IsVideo** | **bool** |  | [optional] 
+**IsImage** | **bool** |  | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
