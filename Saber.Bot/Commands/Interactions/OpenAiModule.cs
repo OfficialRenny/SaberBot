@@ -30,6 +30,17 @@ namespace Saber.Bot.Commands.Interactions
             await FollowupAsync(response);
         }
 
+        [HasAccessFlag(Database.Models.Profile.AccessRoles.OpenAiTextGen)]
+        [SlashCommand("clear-history", "Wipes ChatGPT's memory of this server and starts a fresh conversation.")]
+        public async Task ClearHistory()
+        {
+            await DeferAsync();
+
+            var success = _openAiService.ClearHistory(Context.Guild.Id);
+
+            await FollowupAsync("Chat history cleared.");
+        }
+
         [HasAccessFlag(Database.Models.Profile.AccessRoles.OpenAiImageGen)]
         [SlashCommand("image", "Generate an image")]
         public async Task Image(string prompt)

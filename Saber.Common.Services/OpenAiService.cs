@@ -104,6 +104,11 @@ namespace Saber.Common.Services
             }
         }
 
+        public bool ClearHistory(ulong serverId)
+        {
+            return ServerChats.TryRemove(serverId, out _);
+        }
+
         public async Task<IEnumerable<string>?> ImageGen(string prompt, int count = 1, IUser? user = null)
         {
             var result = await _service.Image.CreateImage(new ImageCreateRequest
