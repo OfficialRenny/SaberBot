@@ -53,6 +53,13 @@ namespace Saber.Bot
 
             var logger = _service.GetRequiredService<Logger>();
 
+            var oldTempFiles = config.TempDir
+                .GetFiles("*", SearchOption.TopDirectoryOnly)
+                .Where(x => x.LastAccessTime < DateTime.Now.AddDays(-14));
+            
+            foreach (var file in oldTempFiles)
+                file.Delete();
+
             _client.Ready += Ready;
 
             await Task.Delay(-1);
