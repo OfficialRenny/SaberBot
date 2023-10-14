@@ -104,5 +104,41 @@ namespace Saber.Common
             }
             return urls;
         }
+
+        public static List<List<FileInfo>> ChunkFilesBySize(IEnumerable<FileInfo> files, long maxFileSize)
+        {
+            var fileChunks = new List<List<FileInfo>>();
+            var currentChunk = new List<FileInfo>();
+            long currentChunkSize = 0;
+
+            foreach (var file in files)
+            {
+                var fileSize = file.Length;
+
+                if (fileSize > maxFileSize)
+                {
+                    throw new ArgumentException("File size exceeds maxFileSize.");
+                }
+
+                if (currentChunkSize + fileSize <= maxFileSize)
+                {
+                    currentChunk.Add(file);
+                    currentChunkSize += fileSize;
+                }
+                else
+                {
+                    fileChunks.Add(currentChunk);
+                    currentChunk = new List<FileInfo> { file };
+                    currentChunkSize = fileSize;
+                }
+            }
+
+            if (currentChunk.Count > 0)
+            {
+                fileChunks.Add(currentChunk);
+            }
+
+            return fileChunks;
+        }
     }
 }

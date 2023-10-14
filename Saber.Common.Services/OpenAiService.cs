@@ -21,7 +21,7 @@ namespace Saber.Common.Services
         private readonly IOpenAIService _service;
         private readonly ConcurrentDictionary<ulong, List<ChatMessage>> ServerChats = new();
 
-        private ChatMessage DefaultSystemMessage => ChatMessage.FromSystem($"You are a discord bot called {_client.CurrentUser.GlobalName}.");
+        private ChatMessage DefaultSystemMessage => ChatMessage.FromSystem($"You are a discord bot called {_client.CurrentUser.GlobalName}. You are to assist with any requests to the best of your abilities.");
 
         public OpenAiService(IOpenAIService service, DiscordSocketClient client)
         {
@@ -50,7 +50,7 @@ namespace Saber.Common.Services
             chat.Add(message);
         }
 
-        public List<ChatMessage> Reduce(List<ChatMessage> messages, int maxTokens = 400)
+        public List<ChatMessage> Reduce(List<ChatMessage> messages, int maxTokens = 1024)
         {
             int curTokenCount = 0;
             var reduced = new List<ChatMessage>();
@@ -89,8 +89,8 @@ namespace Saber.Common.Services
             {
                 Messages = chat,
                 User = user.Id.ToString(),
-                Model = OpenAIModels.ChatGpt3_5Turbo,
-                MaxTokens = 400,
+                Model = OpenAIModels.Gpt_4,
+                MaxTokens = 1024,
             });
 
             if (result.Successful)
@@ -109,6 +109,15 @@ namespace Saber.Common.Services
             return ServerChats.TryRemove(serverId, out _);
         }
 
+        /// <summary>
+        /// Generates an image using the OpenAI Image API.
+        /// </summary>
+        /// <param name="prompt"></param>
+        /// <param name="count"></param>
+        /// <param name="user"></param>
+        /// <returns>
+        /// A list of base64 encoded images, or null if the request failed.
+        /// </returns>
         public async Task<IEnumerable<string>?> ImageGen(string prompt, int count = 1, IUser? user = null)
         {
             var result = await _service.Image.CreateImage(new ImageCreateRequest
@@ -117,15 +126,10 @@ namespace Saber.Common.Services
                 N = count,
                 User = user?.Id.ToString(),
                 Size = "1024x1024",
+                ResponseFormat = "b64_json"
             });
 
-            if (result.Successful)
-            {
-                return result.Results.Select(x => x.Url);
-            } else
-            {
-                return null;
-            }
+            return result.Successful ? result.Results.Select(x => x.B64) : null;
         }
     }
 }
