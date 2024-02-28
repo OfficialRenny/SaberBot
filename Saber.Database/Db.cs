@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Saber.Common;
 using Microsoft.Extensions.Configuration;
+using Saber.Database.Models.Site;
 
 namespace Saber.Database
 {
-    public class Db : DbContext
+    public class Db : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
@@ -31,6 +33,11 @@ namespace Saber.Database
 
         public Db(DbContextOptions<Db> options) : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
         }
     }
 }

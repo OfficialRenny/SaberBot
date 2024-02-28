@@ -1,29 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Betalgo.OpenAI" Version="7.1.5" />
-    <PackageReference Include="CliWrap" Version="3.6.4" />
-    <PackageReference Include="Discord.Net" Version="3.12.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.62.0.3169" />
+    <PackageReference Include="Betalgo.OpenAI" Version="7.4.6" />
+    <PackageReference Include="CliWrap" Version="3.6.6" />
+    <PackageReference Include="Discord.Net" Version="3.13.1" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.67.0.3330" />
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00016" />
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="7.0.11">
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="8.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NSwag.ApiDescription.Client" Version="13.20.0">
+    <PackageReference Include="NSwag.ApiDescription.Client" Version="14.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RestSharp" Version="110.2.0" />
-    <PackageReference Include="YoutubeDLSharp" Version="1.0.0" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>

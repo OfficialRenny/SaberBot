@@ -1,14 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Saber.Bot</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPublishable>True</IsPublishable>
   </PropertyGroup>
-
   <ItemGroup>
     <Content Include="..\lib\libsodium.dll" Link="libsodium.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -17,21 +15,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Betalgo.OpenAI" Version="7.1.5" />
-    <PackageReference Include="CliWrap" Version="3.6.4" />
-    <PackageReference Include="Discord.Net" Version="3.12.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.62.0.3169" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Betalgo.OpenAI" Version="7.4.6" />
+    <PackageReference Include="CliWrap" Version="3.6.6" />
+    <PackageReference Include="Discord.Net" Version="3.13.1" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.67.0.3330" />
     <PackageReference Include="RestSharp" Version="110.2.0" />
-    <PackageReference Include="YoutubeDLSharp" Version="1.0.0" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Saber.Common.Services\Saber.Common.Services.csproj" />
     <ProjectReference Include="..\Saber.Common\Saber.Common.csproj" />
     <ProjectReference Include="..\Saber.Database\Saber.Database.csproj" />
   </ItemGroup>
-
 </Project>
