@@ -18,20 +18,10 @@ namespace Saber.Common.AppSettings
             try
             {
                 environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-                Console.WriteLine($"Found environment variable : {environment}");
-                if (string.IsNullOrWhiteSpace(environment))
-                {
-                    Console.WriteLine($"Setting up Production appsettings.");
-                    //WE ARE IN PROD !!
-                    return ConfigurationContainer = new ConfigurationBuilder()
-                        .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                        .AddJsonFile($"AppSettings/appSettings.json").Build();
-                }
 
-                Console.WriteLine($"Setting up {environment} appsettings.");
                 return ConfigurationContainer = new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                    .AddJsonFile($"AppSettings/appsettings-{environment}.json").Build();
+                    .AddJsonFile($"AppSettings/appSettings.json").Build();
             }
             catch (Exception ex)
             {
