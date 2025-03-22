@@ -16,9 +16,9 @@ namespace Saber.Common.Services
     public class AudioService
     {
         private readonly ConcurrentDictionary<ulong, AsyncAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, AsyncAudioClient>();
-        private readonly LoggerService _logger;
+        private readonly ILogger _logger;
 
-        public AudioService(LoggerService logger)
+        public AudioService(ILogger logger)
         {
             _logger = logger;
         }
@@ -35,7 +35,7 @@ namespace Saber.Common.Services
             var audioClient = await target.ConnectAsync();
 
             if (ConnectedChannels.TryAdd(guild.Id, new AsyncAudioClient(audioClient)))
-                await _logger.Log(LogSeverity.Info, "AudioService", $"Connected to voice on {guild.Name}.");
+                await _logger.LogAsync(LogSeverity.Info, "AudioService", $"Connected to voice on {guild.Name}.");
         }
 
         public async Task LeaveAudio(IGuild guild)
@@ -45,7 +45,7 @@ namespace Saber.Common.Services
             {
                 client.Stop(false);
                 await client.Client.StopAsync();
-                await _logger.Log(LogSeverity.Info, "AudioService", $"Disconnected from voice on {guild.Name}.");
+                await _logger.LogAsync(LogSeverity.Info, "AudioService", $"Disconnected from voice on {guild.Name}.");
             }
         }
 

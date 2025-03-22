@@ -14,6 +14,7 @@ using System.Diagnostics;
 using Saber.Database.Models.Profile;
 using Saber.Database.Providers;
 using Saber.Common;
+using Saber.Common.Services.Interfaces;
 
 namespace Saber.Bot.Core.Handlers
 {
@@ -21,11 +22,12 @@ namespace Saber.Bot.Core.Handlers
     {
         private readonly Config _config;
         private readonly IServiceProvider _services;
+        private readonly ILogger _logger;
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _interactionService;
         private readonly UserProfileProvider _userProfileProvider;
 
-        public InteractionHandler(Config config, IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, UserProfileProvider userProfileProvider)
+        public InteractionHandler(Config config, IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, UserProfileProvider userProfileProvider, ILogger logger)
         {
             _config = config;
             _services = services;
@@ -33,31 +35,29 @@ namespace Saber.Bot.Core.Handlers
             _client = client;
             
             _userProfileProvider = userProfileProvider;
+            _logger = logger;
         }
-
-        private async Task LogAsync(LogMessage log)
-            => Console.WriteLine(log);
-
+        
         private async Task ReadyAsync()
         {
+            var testGuild = _client.Guilds.FirstOrDefault(g => g.Id == Convert.ToUInt64(_config["TestGuildId"]));
+            if (testGuild != null)
+                await testGuild.DeleteApplicationCommandsAsync();
+            
             if (Debugger.IsAttached)
             {
                 await _interactionService.RegisterCommandsToGuildAsync(Convert.ToUInt64(_config["TestGuildId"]), true);
             }
             else
             {
-                var testGuild = _client.Guilds.FirstOrDefault(g => g.Id == Convert.ToUInt64(_config["TestGuildId"]));
-                if (testGuild != null)
-                    await testGuild.DeleteApplicationCommandsAsync();
-
                 await _interactionService.RegisterCommandsGloballyAsync(true);
             }
         }
 
         public async Task SetupCommandsAsync()
         {
+            _interactionService.Log += _logger.LogAsync;
             _client.Ready += ReadyAsync;
-            _interactionService.Log += LogAsync;
 
             var addedModules =
                 await _interactionService.AddModulesAsync(

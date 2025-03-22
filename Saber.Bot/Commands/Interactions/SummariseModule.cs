@@ -12,7 +12,7 @@ namespace Saber.Bot.Commands.Interactions
     public class SummariseCommandModule : ModuleBase<SocketCommandContext>
     {
         public required Config Config { get; set; }
-        public required LoggerService Logger { get; set; }
+        public required ILogger Logger { get; set; }
         public required ISummaryService Service;
 
         [Command("summary")]

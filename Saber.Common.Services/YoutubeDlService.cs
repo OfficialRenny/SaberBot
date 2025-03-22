@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Newtonsoft.Json.Linq;
+using Saber.Common.Services.Interfaces;
 using Saber.Database;
 using Saber.Database.Providers;
 using YoutubeDLSharp;
@@ -16,11 +17,11 @@ namespace Saber.Common.Services
     public class YoutubeDlService
     {
         private readonly Config _config;
-        private readonly LoggerService _logger;
+        private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly YoutubeDL _youtubeDl;
 
-        public YoutubeDlService(Config config, LoggerService logger, HttpClient httpClient)
+        public YoutubeDlService(Config config, ILogger logger, HttpClient httpClient)
         {
             _config = config;
             _logger = logger;
@@ -105,7 +106,7 @@ namespace Saber.Common.Services
             }
             catch (Exception e)
             {
-                await _logger.Log(new LogMessage(LogSeverity.Error, "DownloadCaptions", e.Message, e));
+                await _logger.LogAsync(LogSeverity.Error, "DownloadCaptions", e.Message, e);
                 return null;
             }
         }

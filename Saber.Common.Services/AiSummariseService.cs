@@ -13,13 +13,13 @@ namespace Saber.Common.Services;
 public class AiSummariseService : ISummaryService
 {
     private readonly IOpenAIService _service;
-    private readonly LoggerService _logger;
+    private readonly ILogger _logger;
     private readonly YoutubeDlService _youtubeDl;
     private readonly HttpClient _httpClient;
     
     private readonly Regex _youtubeVideoRegex = new Regex(@"^(?:(?:https|http):\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be).*(?<=\/|v\/|u\/|embed\/|shorts\/|watch\?v=)(?<!\/user\/)(?<id>[\w\-]{11})(?=\?|&|$)");
     
-    public AiSummariseService(IOpenAIService service, LoggerService logger, HttpClient httpClient, YoutubeDlService youtubeDl)
+    public AiSummariseService(IOpenAIService service, ILogger logger, HttpClient httpClient, YoutubeDlService youtubeDl)
     {
         _service = service;
         _logger = logger;
@@ -38,7 +38,7 @@ public class AiSummariseService : ISummaryService
         }
         catch (Exception e)
         {
-            await _logger.Log(LogSeverity.Error, nameof(FetchPageContent), e.Message, e);
+            await _logger.LogAsync(LogSeverity.Error, nameof(FetchPageContent), e.Message, e);
             return string.Empty;
         }
     }
@@ -123,7 +123,7 @@ public class AiSummariseService : ISummaryService
             return await AiSummarise(mainContent, length);
         } catch (Exception e)
         {
-            await _logger.Log(new LogMessage(LogSeverity.Error, "Summarize", e.Message, e));
+            await _logger.LogAsync(LogSeverity.Error, nameof(Summarize), e.Message, e);
             return "Could not summarize the link.";
         }
     }

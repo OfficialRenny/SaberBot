@@ -11,18 +11,20 @@ using Discord.Interactions;
 using Saber.Database.Models.Profile;
 using Saber.Database.Providers;
 using Discord;
+using Saber.Common.Services.Interfaces;
 
 namespace Saber.Bot.Core.Handlers
 {
     public class CommandHandler
     {
         private readonly IServiceProvider _services;
+        private readonly ILogger _logger;
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
         private readonly GuildProvider _guildProvider;
         private readonly UserProfileProvider _userProfileProvider;
 
-        public CommandHandler(IServiceProvider services, DiscordSocketClient client, CommandService commands, UserProfileProvider userProfileProvider, GuildProvider guildProvider)
+        public CommandHandler(IServiceProvider services, DiscordSocketClient client, CommandService commands, UserProfileProvider userProfileProvider, GuildProvider guildProvider, ILogger logger)
         {
             _services = services;
             _commands = commands;
@@ -30,11 +32,13 @@ namespace Saber.Bot.Core.Handlers
 
             _userProfileProvider = userProfileProvider;
             _guildProvider = guildProvider;
+            _logger = logger;
         }
 
         public async Task InstallCommandsAsync()
         {
             _client.MessageReceived += HandleCommandAsync;
+            _commands.Log += _logger.LogAsync;
 
             var addedModules = await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(),
                                             services: _services);

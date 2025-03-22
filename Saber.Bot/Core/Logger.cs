@@ -6,16 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Discord.Interactions;
 using Saber.Common.Services;
+using Saber.Common.Services.Interfaces;
 
 namespace Saber.Bot.Core
 {
-    public class Logger
+    public class BotLogger
     {
-        public Logger(LoggerService loggerService, DiscordSocketClient client, CommandService command)
+        public BotLogger(ILogger logger, DiscordSocketClient client, CommandService command, InteractionService interaction)
         {
-            client.Log += loggerService.LogAsync;
-            command.Log += loggerService.LogAsync;
+            client.Log += logger.LogAsync;
+            command.Log += logger.LogAsync;
+            interaction.Log += logger.LogAsync;
         }
     }
 }

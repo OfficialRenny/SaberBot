@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Saber.Common.Services.Interfaces;
 
 namespace Saber.Common.Services
 {
-    public class LoggerService
+    public class LoggerService : ILogger
     {
-        public Task LogAsync(LogMessage message)
+        public async Task LogAsync(LogMessage message)
         {
             if (message.Exception is CommandException cmdException)
             {
@@ -20,11 +21,8 @@ namespace Saber.Common.Services
             }
             else
                 Console.WriteLine($"[General/{message.Severity}] {message}");
-
-            return Task.CompletedTask;
         }
 
-        public Task Log(LogSeverity severity, string source, string message, Exception? ex = null) => Log(new LogMessage(severity, source, message, ex));
-        public Task Log(LogMessage message) => LogAsync(message);
+        public async Task LogAsync(LogSeverity severity, string source, string message, Exception? ex = null) => LogAsync(new LogMessage(severity, source, message, ex));
     }
 }

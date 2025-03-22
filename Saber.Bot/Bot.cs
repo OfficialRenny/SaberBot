@@ -43,6 +43,9 @@ namespace Saber.Bot
         public async Task MainAsync()
         {
             var config = _service.GetRequiredService<Config>();
+            var logger = _service.GetRequiredService<ILogger>();
+            
+            _client.Log += logger.LogAsync;
             
             await _client.LoginAsync(TokenType.Bot, _config["DiscordToken"]);
             await _client.StartAsync();
@@ -52,9 +55,7 @@ namespace Saber.Bot
 
             var interactionHandler = _service.GetRequiredService<InteractionHandler>();
             await interactionHandler.SetupCommandsAsync();
-
-            var logger = _service.GetRequiredService<Logger>();
-
+            
             var oldTempFiles = config.TempDir
                 .GetFiles("*", SearchOption.TopDirectoryOnly)
                 .Where(x => x.LastAccessTime < DateTime.Now.AddDays(-14));
@@ -69,7 +70,7 @@ namespace Saber.Bot
 
         private async Task Ready()
         {
-            Console.WriteLine("Bot is ready!");          
+            Console.WriteLine("__________        __    .__                                    .___      ._.\n\\______   \\ _____/  |_  |__| ______ _______   ____ _____     __| _/__.__.| |\n |    |  _//  _ \\   __\\ |  |/  ___/ \\_  __ \\_/ __ \\\\__  \\   / __ <   |  || |\n |    |   (  <_> )  |   |  |\\___ \\   |  | \\/\\  ___/ / __ \\_/ /_/ |\\___  | \\|\n |______  /\\____/|__|   |__/____  >  |__|    \\___  >____  /\\____ |/ ____| __\n        \\/                      \\/               \\/     \\/      \\/\\/      \\/");
         }
 
         static IServiceProvider CreateProvider()
@@ -109,7 +110,7 @@ namespace Saber.Bot
                 .AddSingleton(globalConfig)
                 .AddSingleton<IConfiguration>(globalConfig)
                 .AddDbContext<Db>(options => options.UseSqlServer(globalConfig["Database:ConnectionString"]), ServiceLifetime.Transient)
-                .AddSingleton<LoggerService>()
+                .AddSingleton<ILogger, LoggerService>()
                 .AddTransient<UserProfileProvider>()
                 .AddTransient<GuildProvider>()
                 .AddSingleton(httpClient)
@@ -119,7 +120,6 @@ namespace Saber.Bot
                 .AddSingleton<CommandService>()
                 .AddSingleton(interactionConfig)
                 .AddSingleton<InteractionService>()
-                .AddSingleton<Logger>()
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<InteractionHandler>()
                 .AddSingleton(googleConfig)
