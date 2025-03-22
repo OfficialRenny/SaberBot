@@ -366,3 +366,4 @@ lib/*
 Saber.Database/Migrations/*
 **/App.config
 **/appSettings.json
+/Saber.Site/Saber.Site.csproj

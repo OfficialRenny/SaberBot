@@ -4,7 +4,7 @@ namespace Saber.Common
 {
     public class Helpers
     {
-        public static Random Random = new Random();
+        public static readonly Random Random = new Random();
 
         public static readonly string[] EightBallResponses =
         {

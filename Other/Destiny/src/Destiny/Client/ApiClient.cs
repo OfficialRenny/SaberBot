@@ -464,13 +464,13 @@ namespace Destiny.Client
                     !string.IsNullOrEmpty(configuration.OAuthClientSecret) &&
                     configuration.OAuthFlow != null)
                 {
-                    client.UseAuthenticator(new OAuthAuthenticator(
+                    request.Authenticator = new OAuthAuthenticator(
                         configuration.OAuthTokenUrl,
                         configuration.OAuthClientId,
                         configuration.OAuthClientSecret,
                         configuration.OAuthFlow,
                         SerializerSettings,
-                        configuration));
+                        configuration);
                 }
 
                 InterceptRequest(request);
@@ -574,13 +574,13 @@ namespace Destiny.Client
                     !string.IsNullOrEmpty(configuration.OAuthClientSecret) &&
                     configuration.OAuthFlow != null)
                 {
-                    client.UseAuthenticator(new OAuthAuthenticator(
+                    request.Authenticator = new OAuthAuthenticator(
                         configuration.OAuthTokenUrl,
                         configuration.OAuthClientId,
                         configuration.OAuthClientSecret,
                         configuration.OAuthFlow,
                         SerializerSettings,
-                        configuration));
+                        configuration);
                 }
 
                 InterceptRequest(request);

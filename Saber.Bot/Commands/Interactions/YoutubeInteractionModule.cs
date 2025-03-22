@@ -55,9 +55,8 @@ namespace Saber.Bot.Commands.Interactions
             {
                 var cur = musicPresences.First();
                 string songTitle = "";
-                if (cur is SpotifyGame)
+                if (cur is SpotifyGame s)
                 {
-                    SpotifyGame s = (SpotifyGame)cur;
                     songTitle = $"{string.Join(", ", s.Artists)} - {s.TrackTitle}";
                 }
                 else

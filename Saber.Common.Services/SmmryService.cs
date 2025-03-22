@@ -6,10 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Saber.Common.Services.Models;
 using Newtonsoft.Json;
+using Saber.Common.Services.Interfaces;
 
 namespace Saber.Common.Services
 {
-    public class SmmryService
+    public class SmmryService : ISummaryService
     {
         private readonly Config _config;
         private readonly RestClient _client;
@@ -26,10 +27,7 @@ namespace Saber.Common.Services
         public async Task<SmmryResponse?> GetSmmry(string url, int? length = null)
         {
             Uri? uri = new(url);
-
-            if (uri == null)
-                return null;
-
+            
             var parameters = new
             {
                 SM_API_KEY = _config["SmmryKey"],
@@ -37,8 +35,18 @@ namespace Saber.Common.Services
                 SM_LENGTH = length,
             };
 
-            return await _client.GetJsonAsync<SmmryResponse>("/", parameters);
-
+            try
+            {
+                return await _client.GetJsonAsync<SmmryResponse>("/", parameters);
+            }
+            catch (Exception e)
+            {
+                
+                return null;
+            }
         }
+
+        public async Task<string> Summarize(string url, int? length = null)
+            => (await GetSmmry(url, length))?.Content ?? "Failed to summarize the link.";
     }
 }

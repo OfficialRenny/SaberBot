@@ -10,5 +10,6 @@ namespace Saber.Common
     {
         Video,
         Audio,
+        Captions,
     }
 }

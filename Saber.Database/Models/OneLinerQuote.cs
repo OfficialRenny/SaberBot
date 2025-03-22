@@ -5,18 +5,27 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Saber.Database.Models
 {
+    [Index(nameof(Source))]
     public class OneLinerQuote
     {
         public int Id { get; set; }
 
+        [MaxLength(50)]
         public string GXT { get; set; } = string.Empty;
+        
+        [MaxLength(50)]
         public string ImgurLink { get; set; } = string.Empty;
+        
+        [MaxLength(255)]
         public string DiscordLink { get; set; } = string.Empty;
+        
+        [MaxLength(4000)]
         public string Quote { get; set; } = string.Empty;
-
+        
         public OneLinerSource Source { get; set; } = OneLinerSource.NONE;
     }
 

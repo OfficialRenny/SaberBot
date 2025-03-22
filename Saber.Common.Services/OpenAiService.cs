@@ -6,21 +6,24 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using OpenAI;
-using OpenAI.Interfaces;
-using OpenAI.ObjectModels;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.Tokenizer.GPT3;
-using OpenAIModels = OpenAI.ObjectModels.Models;
+using Betalgo.Ranul.OpenAI;
+using Betalgo.Ranul.OpenAI.Interfaces;
+using Betalgo.Ranul.OpenAI.ObjectModels;
+using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
+using Betalgo.Ranul.OpenAI.Tokenizer.GPT3;
+using Saber.Common.Services.Interfaces;
+using OpenAIModels = Betalgo.Ranul.OpenAI.ObjectModels.Models;
 
 namespace Saber.Common.Services
 {
-    public class OpenAiService
+    public class OpenAiService : IChatBot, IImageGen
     {
         private readonly DiscordSocketClient _client;
         private readonly IOpenAIService _service;
-        private readonly ConcurrentDictionary<ulong, List<ChatMessage>> ServerChats = new();
+        private readonly ConcurrentDictionary<ulong, List<ChatMessage>> _serverChats = new();
 
+        private const int MaxTokens = 4096;
+        
         private ChatMessage DefaultSystemMessage => ChatMessage.FromSystem($"You are a discord bot called {_client.CurrentUser.GlobalName}. You are to assist with any requests to the best of your abilities.");
 
         public OpenAiService(IOpenAIService service, DiscordSocketClient client)
@@ -29,28 +32,28 @@ namespace Saber.Common.Services
             _client = client;
         }
 
-        public List<ChatMessage> GetChatMessages(ulong serverId)
+        private List<ChatMessage> GetChatMessages(ulong serverId)
         {
-            if (!ServerChats.TryGetValue(serverId, out var chat))
+            if (!_serverChats.TryGetValue(serverId, out var chat))
             {
                 chat = new List<ChatMessage> { DefaultSystemMessage };
-                ServerChats.TryAdd(serverId, chat);
+                _serverChats.TryAdd(serverId, chat);
             }
             chat = Reduce(chat);
             return chat;
         }
 
-        public void AddChatMessage(ulong serverId, ChatMessage message)
+        private void AddChatMessage(ulong serverId, ChatMessage message)
         {
-            if (!ServerChats.TryGetValue(serverId, out var chat))
+            if (!_serverChats.TryGetValue(serverId, out var chat))
             {
                 chat = new List<ChatMessage> { DefaultSystemMessage };
-                ServerChats.TryAdd(serverId, chat);
+                _serverChats.TryAdd(serverId, chat);
             }
             chat.Add(message);
         }
 
-        public List<ChatMessage> Reduce(List<ChatMessage> messages, int maxTokens = 1024)
+        private List<ChatMessage> Reduce(List<ChatMessage> messages, int maxTokens = MaxTokens)
         {
             int curTokenCount = 0;
             var reduced = new List<ChatMessage>();
@@ -70,7 +73,7 @@ namespace Saber.Common.Services
                 reduced.Insert(0, msg);
             }
 
-            if (!reduced.Any(x => x.Role == StaticValues.ChatMessageRoles.System))
+            if (reduced.All(x => x.Role != StaticValues.ChatMessageRoles.System))
             {
                 reduced.Insert(0, DefaultSystemMessage);
             }
@@ -78,19 +81,23 @@ namespace Saber.Common.Services
             return reduced;
         }
 
-        public async Task<string> Ask(string question, IUser user, IGuild? guild = null)
+        public async Task<string> Ask(string question)
+            => await Ask(question, null);
+        
+        public async Task<string> Ask(string question, IUser? user, IGuild? guild = null)
         {
-            ulong serverId = guild?.Id ?? user.Id;
+            ulong serverId = guild?.Id ?? user?.Id ?? 0;
+            string userName = user?.GlobalName ?? "Anonymous";
 
             var chat = GetChatMessages(serverId);
-            chat.Add(ChatMessage.FromUser(question, user.GlobalName));
+            chat.Add(ChatMessage.FromUser(question, userName));
 
             var result = await _service.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
             {
                 Messages = chat,
-                User = user.Id.ToString(),
-                Model = OpenAIModels.Gpt_4,
-                MaxTokens = 1024,
+                User = user?.Id.ToString() ?? userName,
+                Model = OpenAIModels.Gpt_4o,
+                MaxTokens = MaxTokens,
             });
 
             if (result.Successful)
@@ -106,7 +113,7 @@ namespace Saber.Common.Services
 
         public bool ClearHistory(ulong serverId)
         {
-            return ServerChats.TryRemove(serverId, out _);
+            return _serverChats.TryRemove(serverId, out _);
         }
 
         /// <summary>

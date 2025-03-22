@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Net.Http.Headers;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Google.Apis.Services;
@@ -10,6 +11,7 @@ using System.Web;
 using RestSharp;
 using System.Reflection;
 using Discord.Interactions;
+using Discord.Rest;
 using Saber.Bot.Core.Handlers;
 using Saber.Common.Services;
 using Saber.Database.Providers;
@@ -18,7 +20,9 @@ using Saber.Common.AppSettings;
 using Microsoft.Extensions.Configuration;
 using Saber.Bot.Core;
 using Microsoft.EntityFrameworkCore;
-using OpenAI.Extensions;
+using Betalgo.Ranul.OpenAI.Extensions;
+using Betalgo.Ranul.OpenAI.Interfaces;
+using Saber.Common.Services.Interfaces;
 
 namespace Saber.Bot
 {
@@ -39,9 +43,7 @@ namespace Saber.Bot
         public async Task MainAsync()
         {
             var config = _service.GetRequiredService<Config>();
-
-            var commands = _service.GetRequiredService<CommandService>();
-
+            
             await _client.LoginAsync(TokenType.Bot, _config["DiscordToken"]);
             await _client.StartAsync();
 
@@ -80,7 +82,7 @@ namespace Saber.Bot
                 GatewayIntents = GatewayIntents.All,
                 LogLevel = LogSeverity.Info,
                 AlwaysDownloadUsers = true,
-                MessageCacheSize = 1024,
+                MessageCacheSize = 4096,
             };
             var commandConfig = new CommandServiceConfig
             {
@@ -100,13 +102,17 @@ namespace Saber.Bot
                 DefaultRunMode = Discord.Interactions.RunMode.Async,
             };
 
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59");
+
             var collection = new ServiceCollection()
                 .AddSingleton(globalConfig)
+                .AddSingleton<IConfiguration>(globalConfig)
                 .AddDbContext<Db>(options => options.UseSqlServer(globalConfig["Database:ConnectionString"]), ServiceLifetime.Transient)
                 .AddSingleton<LoggerService>()
                 .AddTransient<UserProfileProvider>()
                 .AddTransient<GuildProvider>()
-                .AddSingleton<HttpClient>()
+                .AddSingleton(httpClient)
                 .AddSingleton(clientConfig)
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton(commandConfig)
@@ -123,11 +129,17 @@ namespace Saber.Bot
                 .AddSingleton<FileUploaderService>()
                 //.AddSingleton<OneLinerService>()
                 .AddSingleton<WarframeService>()
-                .AddSingleton<SmmryService>()
                 .AddTransient<ItemService>();
 
+            collection.AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>());
+            
             collection.AddOpenAIService(settings => { settings.ApiKey = globalConfig["OpenAI:ApiKey"]; });
             collection.AddSingleton<OpenAiService>();
+
+            collection
+                .AddSingleton<IChatBot>(x => x.GetRequiredService<OpenAiService>())
+                .AddSingleton<IImageGen>(x => x.GetRequiredService<OpenAiService>())
+                .AddSingleton<ISummaryService, AiSummariseService>();
 
             return collection.BuildServiceProvider();
         }

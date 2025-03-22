@@ -2,23 +2,33 @@
 using Saber.Common.AppSettings;
 using System.Configuration;
 using System.Dynamic;
+using Microsoft.Extensions.Primitives;
 
 namespace Saber.Common
 {
-    public class Config
+    public class Config : IConfiguration
     {
-        private readonly IConfiguration _config;
-        public Config()
+        private readonly IConfiguration _config = JsonConfiguration.CreateConfigurationContainer();
+
+        public IConfigurationSection GetSection(string key)
         {
-            _config = JsonConfiguration.CreateConfigurationContainer();
+            return _config.GetSection(key);
+        }
+
+        public IEnumerable<IConfigurationSection> GetChildren()
+        {
+            return _config.GetChildren();
+        }
+
+        public IChangeToken GetReloadToken()
+        {
+            return _config.GetReloadToken();
         }
 
         public string this[string key]
         {
-            get
-            {
-                return _config[key];
-            }
+            get => _config[key];
+            set => _config[key] = key;
         }
 
         public DirectoryInfo TempDir

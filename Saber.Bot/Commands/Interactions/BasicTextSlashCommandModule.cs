@@ -19,6 +19,12 @@ namespace SaberBot.Commands.Interactions
 {
     public class BasicTextSlashCommandModule : InteractionModuleBase<SocketInteractionContext>
     {
+        //private readonly OneLinerService OneLinerService;
+        public BasicTextSlashCommandModule()
+        {
+            //OneLinerService = oneLinerService;
+        }
+        
         [SlashCommand("id", "Fetch either your own or a pinged user's ID")]
         public Task Id(
             [Summary("User", "Fetch this user's ID, leave blank for your own.")] IUser? user = null)
@@ -79,26 +85,26 @@ namespace SaberBot.Commands.Interactions
             return RespondAsync($"You rolled {string.Join(", ", Helpers.DiceRoll(diceSize, diceCount))}.");
         }
 
-        //[SlashCommand("oneliner", "Searches for a one-liner gif (https://github.com/ThirteenAG/GTA-One-Liners/)")]
-        //public async Task OneLiner(
-        //    [Summary("Search", "The search term to use.")] string searchTerm,
-        //    OneLinerSource? source = null
-        //    )
-        //{
-        //    await DeferAsync();
+        // [SlashCommand("oneliner", "Searches for a one-liner gif (https://github.com/ThirteenAG/GTA-One-Liners/)")]
+        // public async Task OneLiner(
+        //     [Summary("Search", "The search term to use.")] string searchTerm,
+        //     OneLinerSource? source = null
+        //     )
+        // {
+        //     await DeferAsync();
         //
-        //    var oneLiner = OneLinerService.FindQuote(searchTerm, source);
+        //     var oneLiner = OneLinerService.FindQuote(searchTerm, source);
         //
-        //    var url = oneLiner.ImgurLink;
-        //    if (string.IsNullOrEmpty(url))
-        //        url = oneLiner.DiscordLink;
+        //     var url = oneLiner.ImgurLink;
+        //     if (string.IsNullOrEmpty(url))
+        //         url = oneLiner.DiscordLink;
         //
-        //    var embed = new EmbedBuilder()
-        //        .WithImageUrl(url)
-        //        .WithFooter(oneLiner.Quote)
-        //        .Build();
+        //     var embed = new EmbedBuilder()
+        //         .WithImageUrl(url)
+        //         .WithFooter(oneLiner.Quote)
+        //         .Build();
         //
-        //    await FollowupAsync(embeds: new[] { embed });
-        //}
+        //     await FollowupAsync(embeds: new[] { embed });
+        // }
     }
 }

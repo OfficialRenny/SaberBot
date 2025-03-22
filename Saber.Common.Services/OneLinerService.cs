@@ -11,7 +11,7 @@ namespace Saber.Common.Services
 {
     public class OneLinerService
     {
-        private GenericProvider<OneLinerQuote> _provider;
+        private readonly GenericProvider<OneLinerQuote> _provider;
 
         private readonly List<OneLinerQuote> Quotes;
 
