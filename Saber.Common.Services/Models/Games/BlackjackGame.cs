@@ -1,16 +1,16 @@
-﻿using Discord;
-using Saber.Common.Services.Models.Games.Cards;
+﻿using Saber.Common.Services.Models.Games.Cards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetCord;
 
 namespace Saber.Common.Services.Models.Games
 {
     public class BlackjackGame
     {
-        public IUser InitiatedBy { get; set; }
+        public User InitiatedBy { get; set; }
 
         public Deck<PlayingCard> Deck { get; set; }
         public List<PlayingCard> DealerHand { get; set; } = new();
@@ -22,7 +22,7 @@ namespace Saber.Common.Services.Models.Games
         public int InitialBet { get; set; }
         public int BetPool { get; set; }
 
-        public BlackjackGame(IUser user, int bet)
+        public BlackjackGame(User user, int bet)
         {
             InitiatedBy = user;
             InitialBet = bet;

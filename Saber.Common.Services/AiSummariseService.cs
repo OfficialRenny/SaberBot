@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
 using Betalgo.Ranul.OpenAI.Interfaces;
 using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
-using Discord;
 using Google.Apis.YouTube.v3;
 using Saber.Common.Services.Interfaces;
 using HtmlAgilityPack;
+using NetCord.Gateway;
 using OpenAIModels = Betalgo.Ranul.OpenAI.ObjectModels.Models;
 
 

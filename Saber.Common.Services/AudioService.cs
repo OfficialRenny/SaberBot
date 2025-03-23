@@ -5,70 +5,61 @@ using System.Text;
 using System.Threading.Tasks;
 using CliWrap;
 using CliWrap.Buffered;
-using Discord;
-using Discord.Audio;
-using Discord.WebSocket;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Gateway.Voice;
 using Saber.Common.Services.Interfaces;
 using Saber.Common.Services.Models;
 
 namespace Saber.Common.Services
 {
-    public class AudioService
+    public class AudioService(ILogger logger, GatewayClient client)
     {
-        private readonly ConcurrentDictionary<ulong, AsyncAudioClient> ConnectedChannels = new ConcurrentDictionary<ulong, AsyncAudioClient>();
-        private readonly ILogger _logger;
+        private readonly ConcurrentDictionary<ulong, AsyncAudioClient> _connectedChannels = new ConcurrentDictionary<ulong, AsyncAudioClient>();
 
-        public AudioService(ILogger logger)
+        public async Task JoinAudio(Guild guild, IVoiceGuildChannel target)
         {
-            _logger = logger;
-        }
-
-        public async Task JoinAudio(IGuild guild, IVoiceChannel target)
-        {
-            AsyncAudioClient client;
-            if (ConnectedChannels.TryGetValue(guild.Id, out client))
+            if (_connectedChannels.TryGetValue(guild.Id, out _))
                 return;
 
-            if (target.Guild.Id != guild.Id)
+            if (target.GuildId != guild.Id)
                 return;
 
-            var audioClient = await target.ConnectAsync();
+            var audioClient = await client.JoinVoiceChannelAsync(guild.Id, target.Id);
 
-            if (ConnectedChannels.TryAdd(guild.Id, new AsyncAudioClient(audioClient)))
-                await _logger.LogAsync(LogSeverity.Info, "AudioService", $"Connected to voice on {guild.Name}.");
+            if (_connectedChannels.TryAdd(guild.Id, new AsyncAudioClient(audioClient)))
+                await logger.LogAsync(LogSeverity.Info, "AudioService", $"Connected to voice on {guild.Name}.");
         }
 
-        public async Task LeaveAudio(IGuild guild)
+        public async Task LeaveAudio(Guild guild)
         {
-            AsyncAudioClient client;
-            if (ConnectedChannels.TryRemove(guild.Id, out client))
+            if (_connectedChannels.TryRemove(guild.Id, out var client))
             {
                 client.Stop(false);
-                await client.Client.StopAsync();
-                await _logger.LogAsync(LogSeverity.Info, "AudioService", $"Disconnected from voice on {guild.Name}.");
+                await logger.LogAsync(LogSeverity.Info, "AudioService", $"Disconnected from voice on {guild.Name}.");
             }
         }
 
-        public void StopAudioAsync(IGuild guild)
+        public async Task StopAudioAsync(Guild guild)
         {
-            AsyncAudioClient client;
-            if (ConnectedChannels.TryGetValue(guild.Id, out client))
+            if (_connectedChannels.TryGetValue(guild.Id, out var client))
             {
                 client.Stop();
+                await logger.LogAsync(LogSeverity.Info, "AudioService", $"Stopped playback in {guild.Name}");
             }
         }
 
-        public async Task SendAudioAsync(IGuild guild, IMessageChannel channel, IAudio audio)
+        public async Task SendAudioAsync(Guild guild, TextChannel channel, IAudio audio)
         {
-            AsyncAudioClient client;
-            if (ConnectedChannels.TryGetValue(guild.Id, out client))
+            if (_connectedChannels.TryGetValue(guild.Id, out var client))
             {
                 client.Stop();
 
-                await _logger.LogAsync(new LogMessage(LogSeverity.Info, "SendAudioAsync", $"Starting playback in {guild.Name}"));
+                await logger.LogAsync(LogSeverity.Info, "SendAudioAsync", $"Starting playback in {guild.Name}");
 
                 using (var pcmStream = await FfmpegConvertToPcmProcess(audio.Stream))
-                using (var stream = client.Client.CreatePCMStream(AudioApplication.Mixed))
+                using (var outStream = client.Client.CreateOutputStream())
+                using (OpusEncodeStream stream = new(outStream, PcmFormat.Short, VoiceChannels.Stereo, OpusApplication.Audio))
                 {
                     try
                     {
@@ -85,7 +76,7 @@ namespace Saber.Common.Services
                         }
 
                         audio.OnFinished();
-                        await _logger.LogAsync(new LogMessage(LogSeverity.Info, "SendAudioAsync", "Finished copying incoming stream to audio client stream"));
+                        await logger.LogAsync(LogSeverity.Info, "SendAudioAsync", "Finished copying incoming stream to audio client stream");
                     }
                     finally
                     {
@@ -110,7 +101,7 @@ namespace Saber.Common.Services
 
             if (sb.Length > 0)
             {
-                Console.WriteLine(sb.ToString());
+                await logger.LogAsync(LogSeverity.Error, "FfmpegConvertToPcmProcess", sb.ToString());
             }
 
             stdOutBuffer.Seek(0, SeekOrigin.Begin);

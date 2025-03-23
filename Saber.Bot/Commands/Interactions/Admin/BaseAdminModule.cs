@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
-using Saber.Bot.Commands.Attributes;
+﻿using Saber.Bot.Commands.Attributes;
 using Saber.Database;
 using Saber.Database.Providers;
 using System;
@@ -8,39 +6,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetCord;
+using NetCord.Services.ApplicationCommands;
+using Saber.Bot.Core.Extensions;
 
 namespace Saber.Bot.Commands.Interactions.Admin
 {
-    [RequireOwner(Group = "OwnerOrAdmin")]
-    [IsAdmin(Group = "OwnerOrAdmin")]
-    [Group("admin", "Admin commands")]
-    public class BaseAdminModule : InteractionModuleBase<SocketInteractionContext>
+    [IsAdmin<ApplicationCommandContext>]
+    [SlashCommand("admin", "Admin commands")]
+    public class BaseAdminModule(Db db) : InteractionModule<ApplicationCommandContext>
     {
-        private readonly UserProfileProvider _provider;
+        private readonly UserProfileProvider _provider = new(db);
 
-        public BaseAdminModule(Db db)
-        {
-            _provider = new UserProfileProvider(db);
-        }
-
-        [SlashCommand("cleanup", "Clean up the last X messages created by the bot.")]
+        [SubSlashCommand("cleanup", "Clean up the last X messages created by the bot.")]
         public async Task CleanUp(int messageCount = 15)
         {
             await DeferAsync(true);
-            var messages = Context.Channel.CachedMessages.Where(m => m.Author.Id == Context.Client.CurrentUser.Id).OrderByDescending(m => m.Timestamp).Take(messageCount);
-
+            
+            var channelMessages = Context.Channel.GetMessagesAsync();
+            var messages = channelMessages.Where(m => m.Author.Id == Context.Client.Id).OrderByDescending(m => m.CreatedAt).Take(messageCount);
+            
             List<Task> deleteTasks = new List<Task>();
 
-            foreach (var message in messages)
-                deleteTasks.Add(Context.Channel.DeleteMessageAsync(message));
+            await foreach (var message in messages)
+                deleteTasks.Add(Context.Channel.DeleteMessageAsync(message.Id));
 
             await Task.WhenAll(deleteTasks);
 
             await FollowupAsync($"Done, cleaned {deleteTasks.Count(t => t.IsCompleted)} messages.");
         }
 
-        [SlashCommand("toggleadmin", "Toggles admin status for a user.")]
-        public async Task ToggleAdmin(IUser user)
+        [SubSlashCommand("toggleadmin", "Toggles admin status for a user.")]
+        public async Task ToggleAdmin(User user)
         {
             var d = DeferAsync(true);
 
@@ -51,8 +48,8 @@ namespace Saber.Bot.Commands.Interactions.Admin
             await FollowupAsync($"User {user.Username} is now {(userProfile.IsAdmin ? "an admin" : "not an admin")}.");
         }
 
-        [SlashCommand("toggleaccessrole", "Toggles access to a specific role for a user.")]
-        public async Task ToggleAccessRole(IUser user, Database.Models.Profile.AccessRoles roles)
+        [SubSlashCommand("toggleaccessrole", "Toggles access to a specific role for a user.")]
+        public async Task ToggleAccessRole(User user, Database.Models.Profile.AccessRoles roles)
         {
             var d = DeferAsync(true);
 
@@ -64,7 +61,7 @@ namespace Saber.Bot.Commands.Interactions.Admin
         }
 
         [SlashCommand("listaccessroles", "Lists all access roles for a user.")]
-        public async Task ListAccessRoles(IUser user)
+        public async Task ListAccessRoles(User user)
         {
             var d = DeferAsync(true);
 

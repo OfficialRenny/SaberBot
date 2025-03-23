@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
-using Saber.Common;
+﻿using Saber.Common;
 using Saber.Common.Services;
 using Saber.Database;
 using Saber.Database.Models;
@@ -13,11 +11,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services.ApplicationCommands;
+using Saber.Bot.Core.Extensions;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SaberBot.Commands.Interactions
 {
-    public class BasicTextSlashCommandModule : InteractionModuleBase<SocketInteractionContext>
+    public class BasicTextSlashCommandModule : InteractionModule<ApplicationCommandContext>
     {
         //private readonly OneLinerService OneLinerService;
         public BasicTextSlashCommandModule()
@@ -27,7 +29,7 @@ namespace SaberBot.Commands.Interactions
         
         [SlashCommand("id", "Fetch either your own or a pinged user's ID")]
         public Task Id(
-            [Summary("User", "Fetch this user's ID, leave blank for your own.")] IUser? user = null)
+            [SlashCommandParameter(Name = "user", Description = "Fetch this user's ID, leave blank for your own.")] User? user = null)
         {
             user ??= Context.User;
             return RespondAsync($"{user.Username}'s ID is {user.Id}");
@@ -35,21 +37,21 @@ namespace SaberBot.Commands.Interactions
 
         [SlashCommand("8ball", "Ask the magic 8-ball a question.")]
         public Task EightBall(
-            [Summary("Question")] string question)
+            [SlashCommandParameter(Name = "question")] string question)
         {
             return RespondAsync(Helpers.EightBallResponses[Helpers.Random.Next(0, Helpers.EightBallResponses.Length)]);
         }
 
         [SlashCommand("blocky", "Converts text to blocky text")]
         public Task BlockyText(
-            [Summary("Text")] string textToBlockify)
+            [SlashCommandParameter(Name = "text")] string textToBlockify)
         {
             return RespondAsync(Helpers.StringToRegionalIndicators(textToBlockify));
         }
 
         [SlashCommand("chance", "Give it a percentage and the bot will decide whether you suceed or fail.")]
         public Task NumberChance(
-            [Summary("Percentage")] int i)
+            [SlashCommandParameter(Name = "percentage")] int i)
         {
             if (i < 1 || i > 100)
                 return RespondAsync("Please choose a number between 1 and 100.");
@@ -71,7 +73,7 @@ namespace SaberBot.Commands.Interactions
 
         [SlashCommand("ping", "Pong, check's the bots latency.")]
         public async Task Pong()
-            => await RespondAsync(text: $"Pong! Latency: {Context.Client.Latency}ms");
+            => await RespondAsync($"Pong! Latency: {Context.Client.Latency}ms");
 
         [SlashCommand("uptime", "Check's the bots uptime.")]
         public Task Uptime()
@@ -80,7 +82,9 @@ namespace SaberBot.Commands.Interactions
         }
 
         [SlashCommand("roll", "Rolls dice.")]
-        public Task RollDice([MinValue(1)] int diceSize, [MinValue(1)] int diceCount = 1)
+        public Task RollDice(
+            [SlashCommandParameter(MinValue = 1)] int diceSize, 
+            [SlashCommandParameter(MinValue = 1)] int diceCount = 1)
         {
             return RespondAsync($"You rolled {string.Join(", ", Helpers.DiceRoll(diceSize, diceCount))}.");
         }

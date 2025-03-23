@@ -1,6 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.Interactions;
+﻿using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
+using NetCord.Services.ApplicationCommands;
+using NetCord.Services.Commands;
 using Saber.Bot.Core;
 using Saber.Bot.Core.Extensions;
 using Saber.Common;
@@ -9,26 +11,24 @@ using Saber.Common.Services.Interfaces;
 
 namespace Saber.Bot.Commands.Interactions
 {
-    public class SummariseCommandModule : ModuleBase<SocketCommandContext>
+    public class SummariseCommandModule(ISummaryService service) : MessageCommandModule<CommandContext>
     {
-        public required Config Config { get; set; }
-        public required ILogger Logger { get; set; }
-        public required ISummaryService Service;
-
         [Command("summary")]
-        [Discord.Commands.Summary("Gets a summary of a link/article")]
         public async Task Summary(string url, int length = 7)
         {
-            Uri? uri = new(url);
-
+            Uri.TryCreate(url, UriKind.Absolute, out Uri? uri);
+            
             if (uri == null)
+            {
+                await ReplyAsync("Unable to parse the URL as a valid URL");
                 return;
-
+            }
+            
             length = Math.Clamp(length, 1, 30);
             
-            var resp = await Service.Summarize(url, length);
+            var resp = await service.Summarize(url, length);
 
-            if (resp == null || string.IsNullOrWhiteSpace(resp))
+            if (string.IsNullOrWhiteSpace(resp))
             {
                 await ReplyAsync($"Couldn't fetch a summary of the URL.");
                 return;
@@ -44,21 +44,14 @@ namespace Saber.Bot.Commands.Interactions
         }
     }
 
-    public class SummariseInteractionModule : InteractionModule<SocketInteractionContext>
+    public class SummariseInteractionModule(ISummaryService service) : InteractionModule<ApplicationCommandContext>
     {
-        private readonly ISummaryService _service;
-
-        public SummariseInteractionModule(ISummaryService service)
-        {
-            _service = service;
-        }
-
         [SlashCommand("summarise", "Gets a summary of a link/article/youtube video")]
         public async Task Summarise(
-            [Discord.Interactions.Summary("url", "Article URL")] string url,
-            [Discord.Interactions.Summary("paragraphs", "Number of paragraphs to fetch.")] int length = 7)
+            [SlashCommandParameter( Name = "url", Description = "Article URL")] string url,
+            [SlashCommandParameter( Name = "paragraphs", Description = "Number of paragraphs to fetch.", MinValue = 1, MaxValue = 15)] int length = 7)
         {
-            Uri? uri = new(url);
+            Uri.TryCreate(url, UriKind.Absolute, out Uri? uri);
 
             if (uri == null)
             {
@@ -68,11 +61,11 @@ namespace Saber.Bot.Commands.Interactions
 
             await DeferAsync();
 
-            length = Math.Clamp(length, 1, 30);
+            length = Math.Clamp(length, 1, 15);
             
-                var resp = await _service.Summarize(url, length);
+            var resp = await service.Summarize(url, length);
             
-            if (resp == null || string.IsNullOrWhiteSpace(resp))
+            if (string.IsNullOrWhiteSpace(resp))
             {
                 await FollowupAsync($"Couldn't fetch a summary of the URL.");
                 return;
@@ -82,13 +75,17 @@ namespace Saber.Bot.Commands.Interactions
         }
 
         [MessageCommand("Summarise")]
-        public async Task Summarise(IMessage message)
+        public async Task Summarise(RestMessage message)
         {
-            var urls = Helpers.GetUrls(message.Content);
+            var urls = Helpers.GetUrls(message.Content).ToList();
 
-            if (!urls.Any())
+            if (urls.Count == 0)
             {
-                await FollowupAsync("No URLs found in message.", ephemeral: true);
+                await FollowupAsync(new InteractionMessageProperties
+                {
+                    Content = "No URLs found in message.",
+                    Flags = MessageFlags.Ephemeral
+                });
                 return;
             }
 
@@ -96,9 +93,9 @@ namespace Saber.Bot.Commands.Interactions
 
             var url = urls.First();
 
-            var resp = await _service.Summarize(url, 7);
+            var resp = await service.Summarize(url, 7);
             
-            if (resp == null || string.IsNullOrWhiteSpace(resp))
+            if (string.IsNullOrWhiteSpace(resp))
             {
                 await FollowupAsync($"Couldn't fetch a summary of the URL.");
                 return;

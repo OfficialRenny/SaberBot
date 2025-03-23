@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
+using NetCord.Gateway;
 using Newtonsoft.Json.Linq;
 using Saber.Common.Services.Interfaces;
 using Saber.Database;
@@ -16,19 +16,17 @@ namespace Saber.Common.Services
 {
     public class YoutubeDlService
     {
-        private readonly Config _config;
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly YoutubeDL _youtubeDl;
 
         public YoutubeDlService(Config config, ILogger logger, HttpClient httpClient)
         {
-            _config = config;
             _logger = logger;
             _httpClient = httpClient;
 
             _youtubeDl = new YoutubeDL(6);
-            _youtubeDl.OutputFolder = _config.TempDir.FullName;
+            _youtubeDl.OutputFolder = config.TempDir.FullName;
         }
 
         public async IAsyncEnumerable<string> GetValidUrlsAsync(string message)

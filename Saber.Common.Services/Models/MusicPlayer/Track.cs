@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
+using NetCord;
 using Saber.Common.Services.Interfaces;
 
 namespace Saber.Common.Services.Models.MusicPlayer
@@ -16,7 +16,7 @@ namespace Saber.Common.Services.Models.MusicPlayer
         public TimeSpan Length { get; set; } = TimeSpan.Zero;
         public TimeSpan Position { get; set; } = TimeSpan.Zero;
 
-        public IUser RequestedBy { get; set; } = null!;
+        public User RequestedBy { get; set; } = null!;
 
         public bool Loop { get; set; } = false;
 
@@ -26,7 +26,7 @@ namespace Saber.Common.Services.Models.MusicPlayer
         public FileInfo CachedFile { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public Stream Stream { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public Track(string name, string url, TimeSpan length, IUser requestedBy)
+        public Track(string name, string url, TimeSpan length, User requestedBy)
         {
             Name = name;
             Url = url;

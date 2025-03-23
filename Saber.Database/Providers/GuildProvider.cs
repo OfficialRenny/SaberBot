@@ -1,5 +1,4 @@
-﻿using Discord;
-using Saber.Database.Models.Guilds;
+﻿using Saber.Database.Models.Guilds;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace Saber.Database.Providers
             return DbCtx.Guilds.FirstOrDefault(x => x.GuildId == id);
         }
 
-        public Guild CreateGuild(IGuild guild)
+        public Guild CreateGuild(NetCord.Gateway.Guild guild)
             => CreateGuild(guild.Id, guild.Name);
 
         public Guild CreateGuild(ulong id, string name = "")
@@ -27,7 +26,6 @@ namespace Saber.Database.Providers
             var guild = GetGuild(id);
             if (guild != null)
                 return guild;
-            
 
             guild = new Guild
             {

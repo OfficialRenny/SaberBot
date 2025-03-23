@@ -4,33 +4,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
 using Betalgo.Ranul.OpenAI;
 using Betalgo.Ranul.OpenAI.Interfaces;
 using Betalgo.Ranul.OpenAI.ObjectModels;
 using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
 using Betalgo.Ranul.OpenAI.Tokenizer.GPT3;
+using NetCord;
+using NetCord.Gateway;
 using Saber.Common.Services.Interfaces;
 using OpenAIModels = Betalgo.Ranul.OpenAI.ObjectModels.Models;
 
 namespace Saber.Common.Services
 {
-    public class OpenAiService : IChatBot, IImageGen
+    public class OpenAiService(IOpenAIService service, GatewayClient client) : IChatBot, IImageGen
     {
-        private readonly DiscordSocketClient _client;
-        private readonly IOpenAIService _service;
         private readonly ConcurrentDictionary<ulong, List<ChatMessage>> _serverChats = new();
 
         private const int MaxTokens = 4096;
         
-        private ChatMessage DefaultSystemMessage => ChatMessage.FromSystem($"You are a discord bot called {_client.CurrentUser.GlobalName}. You are to assist with any requests to the best of your abilities.");
-
-        public OpenAiService(IOpenAIService service, DiscordSocketClient client)
-        {
-            _service = service;
-            _client = client;
-        }
+        private ChatMessage DefaultSystemMessage => 
+            ChatMessage.FromSystem($"You are a discord bot called {client.Cache.User?.Username}. You are to assist with any requests to the best of your abilities.");
 
         private List<ChatMessage> GetChatMessages(ulong serverId)
         {
@@ -84,7 +77,7 @@ namespace Saber.Common.Services
         public async Task<string> Ask(string question)
             => await Ask(question, null);
         
-        public async Task<string> Ask(string question, IUser? user, IGuild? guild = null)
+        public async Task<string> Ask(string question, User? user, Guild? guild = null)
         {
             ulong serverId = guild?.Id ?? user?.Id ?? 0;
             string userName = user?.GlobalName ?? "Anonymous";
@@ -92,7 +85,7 @@ namespace Saber.Common.Services
             var chat = GetChatMessages(serverId);
             chat.Add(ChatMessage.FromUser(question, userName));
 
-            var result = await _service.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
+            var result = await service.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
             {
                 Messages = chat,
                 User = user?.Id.ToString() ?? userName,
@@ -125,9 +118,9 @@ namespace Saber.Common.Services
         /// <returns>
         /// A list of base64 encoded images, or null if the request failed.
         /// </returns>
-        public async Task<IEnumerable<string>?> ImageGen(string prompt, int count = 1, IUser? user = null)
+        public async Task<IEnumerable<string>?> ImageGen(string prompt, int count = 1, User? user = null)
         {
-            var result = await _service.Image.CreateImage(new ImageCreateRequest
+            var result = await service.Image.CreateImage(new ImageCreateRequest
             {
                 Prompt = prompt,
                 N = count,

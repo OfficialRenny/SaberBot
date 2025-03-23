@@ -1,9 +1,9 @@
-using Discord;
+using NetCord.Gateway;
 
 namespace Saber.Common.Services.Interfaces;
 
 public interface ILogger
 {
-    public Task LogAsync(LogMessage message);
-    public Task LogAsync(LogSeverity severity, string source, string message, Exception? ex = null);
+    public ValueTask LogAsync(LogMessage message);
+    public ValueTask LogAsync(LogSeverity severity, string source, string message, Exception? ex = null);
 }

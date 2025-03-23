@@ -1,5 +1,4 @@
-﻿using Discord;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Saber.Common;
 using Saber.Database.Models.Profile;
 using System;
@@ -7,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client;
+using NetCord;
 
 namespace Saber.Database.Providers
 {
@@ -16,7 +17,7 @@ namespace Saber.Database.Providers
         {
         }
 
-        public UserProfile? GetUserProfile(IUser user)
+        public UserProfile? GetUserProfile(User user)
             => GetUserProfile(user.Id);
 
         public UserProfile? GetUserProfile(ulong discordId)
@@ -29,8 +30,8 @@ namespace Saber.Database.Providers
             return profile;
         }
 
-        public UserProfile CreateProfile(IUser user)
-            => CreateProfile(user.Id, user.GlobalName);
+        public UserProfile CreateProfile(User user)
+            => CreateProfile(user.Id, user.GlobalName ?? user.Username);
 
         public UserProfile CreateProfile(ulong discordId, string username = "")
         {
@@ -45,8 +46,8 @@ namespace Saber.Database.Providers
             return profile;
         }
 
-        public UserProfile GetOrCreateProfile(IUser user)
-            => GetOrCreateProfile(user.Id, user.GlobalName);
+        public UserProfile GetOrCreateProfile(User user)
+            => GetOrCreateProfile(user.Id, user.GlobalName ?? user.Username);
 
         public UserProfile GetOrCreateProfile(ulong discordId, string username = "")
         {
@@ -55,7 +56,7 @@ namespace Saber.Database.Providers
             return profile;
         }
 
-        public UserProfile ModifyUserProfile(IUser user, Action<UserProfile> action)
+        public UserProfile ModifyUserProfile(User user, Action<UserProfile> action)
             => ModifyUserProfile(user.Id, action);
 
         public UserProfile ModifyUserProfile(ulong discordId, Action<UserProfile> action)

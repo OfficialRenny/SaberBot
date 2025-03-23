@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Saber.Common.Services;
 using Saber.Database;
 using System;
@@ -8,28 +6,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services;
+using NetCord.Services.ApplicationCommands;
 
 namespace Saber.Bot.Commands.Attributes
 {
-    public class OwnedItemsAutocompleteHandler : AutocompleteHandler
+    public class OwnedItemsAutocompleteHandler(ItemService itemService) : IAutocompleteProvider<AutocompleteInteractionContext>
     {
-        public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
+        public async ValueTask<IEnumerable<ApplicationCommandOptionChoiceProperties>> GetChoicesAsync(ApplicationCommandInteractionDataOption option, AutocompleteInteractionContext context)
         {
-            var itemService = services.GetRequiredService<ItemService>();
-
             // get all inventory items owned by user, return an autocompleteresult list with the item names as names, and their database ids as values
             var items = itemService.GetOwnedItems(context.User.Id);
 
-            IEnumerable<AutocompleteResult> suggestions = items.Select(x => new AutocompleteResult(x.Item.Name, x.Item.Id.ToString())).ToList();
+            IEnumerable<ApplicationCommandOptionChoiceProperties> suggestions = items.Select(x => new ApplicationCommandOptionChoiceProperties(x.Item.Name, x.Item.Id.ToString())).ToList();
 
-            if (suggestions.Any())
-            {
-                return AutocompletionResult.FromSuccess(suggestions.Take(25));
-            }
-            else
-            {
-                return AutocompletionResult.FromSuccess();
-            }
+            return suggestions.Any() ? suggestions.Take(25) : [];
         }
     }
 }

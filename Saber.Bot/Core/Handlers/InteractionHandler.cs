@@ -1,89 +1,57 @@
-﻿using Discord.Commands;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Saber.Database;
-using Discord.Interactions;
 using System.Reflection.Metadata;
-using Discord;
 using System.Diagnostics;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Hosting.Gateway;
+using NetCord.Services;
+using NetCord.Services.ApplicationCommands;
 using Saber.Database.Models.Profile;
 using Saber.Database.Providers;
-using Saber.Common;
 using Saber.Common.Services.Interfaces;
 
-namespace Saber.Bot.Core.Handlers
+namespace Saber.Bot.Core.Handlers;
+
+[GatewayEvent(nameof(GatewayClient.InteractionCreate))]
+public class InteractionHandler(
+    IServiceProvider services,
+    GatewayClient client,
+    ApplicationCommandService<ApplicationCommandContext> interactionService,
+    UserProfileProvider userProfileProvider,
+    ILogger logger)
+    : IGatewayEventHandler<Interaction>
 {
-    public class InteractionHandler
+    public async ValueTask HandleAsync(Interaction interaction)
     {
-        private readonly Config _config;
-        private readonly IServiceProvider _services;
-        private readonly ILogger _logger;
-        private readonly DiscordSocketClient _client;
-        private readonly InteractionService _interactionService;
-        private readonly UserProfileProvider _userProfileProvider;
-
-        public InteractionHandler(Config config, IServiceProvider services, DiscordSocketClient client, InteractionService interactionService, UserProfileProvider userProfileProvider, ILogger logger)
-        {
-            _config = config;
-            _services = services;
-            _interactionService = interactionService;
-            _client = client;
-            
-            _userProfileProvider = userProfileProvider;
-            _logger = logger;
-        }
+        if (interaction is not ApplicationCommandInteraction applicationCommandInteraction)
+            return;
         
-        private async Task ReadyAsync()
+        var interactionUser = applicationCommandInteraction.User;
+        if (interactionUser.IsBot || interactionUser.IsSystemUser == true)
+            return;
+        
+        var user = userProfileProvider.GetOrCreateProfile(interactionUser.Id);
+        
+        user.LastKnownDisplayName = interaction.User.GlobalName ?? interaction.User.Username;
+        userProfileProvider.Save();
+
+        var context = new ApplicationCommandContext(applicationCommandInteraction, client);
+        var interactionResult = await interactionService.ExecuteAsync(context, services);
+
+        if (interactionResult is not IFailResult failResult)
         {
-            var testGuild = _client.Guilds.FirstOrDefault(g => g.Id == Convert.ToUInt64(_config["TestGuildId"]));
-            if (testGuild != null)
-                await testGuild.DeleteApplicationCommandsAsync();
-            
-            if (Debugger.IsAttached)
-            {
-                await _interactionService.RegisterCommandsToGuildAsync(Convert.ToUInt64(_config["TestGuildId"]), true);
-            }
-            else
-            {
-                await _interactionService.RegisterCommandsGloballyAsync(true);
-            }
+            user.IncrementCommandsExecuted();
+            userProfileProvider.Save();
         }
-
-        public async Task SetupCommandsAsync()
+        else
         {
-            _interactionService.Log += _logger.LogAsync;
-            _client.Ready += ReadyAsync;
-
-            var addedModules =
-                await _interactionService.AddModulesAsync(
-                    assembly: Assembly.GetEntryAssembly(),
-                    services: _services);
-
-            _client.InteractionCreated += HandleInteractionAsync;
-        }
-
-        private async Task HandleInteractionAsync(SocketInteraction interaction)
-        {
-            var user = _userProfileProvider.GetOrCreateProfile(interaction.User.Id);
-            user.LastKnownDisplayName = interaction.User.GlobalName;
-            _userProfileProvider.Save();
-
-            var context = new SocketInteractionContext(_client, interaction);
-            var interactionResult = await _interactionService.ExecuteCommandAsync(
-                context,
-                _services
-            );
-
-            if (interactionResult.IsSuccess)
-            {
-                user.IncrementCommandsExecuted();
-                _userProfileProvider.Save();
-            }
+            await logger.LogAsync(LogSeverity.Error, nameof(HandleAsync), failResult.Message);
         }
     }
 }

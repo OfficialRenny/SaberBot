@@ -1,9 +1,4 @@
-﻿using Azure.Core;
-using Discord;
-using Discord.Audio;
-using Discord.Interactions;
-using Discord.WebSocket;
-using Saber.Common.Services;
+﻿using Saber.Common.Services;
 using Saber.Common.Services.Models;
 using System;
 using System.Collections.Generic;
@@ -13,112 +8,179 @@ using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services.ApplicationCommands;
+using Saber.Bot.Core.Extensions;
 
 namespace Saber.Bot.Commands.Interactions
 {
-    [Group("tts", "Text-to-speech using DecTalk")]
-    public class TtsInteractionModule : InteractionModuleBase<SocketInteractionContext>
+    [SlashCommand("tts", "Text-to-speech using DecTalk")]
+    public class TtsInteractionModule(AudioService service, HttpClient httpClient)
+        : InteractionModule<ApplicationCommandContext>
     {
-        private readonly AudioService _service;
-        private readonly HttpClient _httpClient;
-
-        public TtsInteractionModule(AudioService service, HttpClient httpClient)
-        {
-            _service = service;
-            _httpClient = httpClient;
-        }
-
-        [SlashCommand("join", "Join voice channel.", runMode: RunMode.Async)]
-        public async Task JoinChannel(IVoiceChannel? channel = null)
+        [SubSlashCommand("join", "Join voice channel.")]
+        public async Task JoinChannel(IVoiceGuildChannel? channel = null)
         {
             await DeferAsync(true);
 
-            IVoiceChannel? vc = GetVoiceChannel(channel);
+            channel = await GetVoiceChannel(channel);
 
-            if (vc == null)
+            if (channel == null)
             {
-                await FollowupAsync("You must be in a voice channel to use this command.", ephemeral: true);
+                await FollowupAsync(new InteractionMessageProperties
+                {
+                    Content = "You must be in a voice channel to use this command.",
+                    Flags = MessageFlags.Ephemeral,
+                });
                 return;
             }
 
-            await _service.JoinAudio(Context.Guild, vc);
+            if (Context.Guild == null)
+            {
+                await FollowupAsync(new InteractionMessageProperties
+                {
+                    Content = "This command must be used in a guild.",
+                    Flags = MessageFlags.Ephemeral,
+                });
+                return;
+            }
+            
+            await service.JoinAudio(Context.Guild, channel);
 
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            await FollowupAsync(new InteractionMessageProperties
+            {
+                Content = "Done!",
+                Flags = MessageFlags.Ephemeral,
+            });
+            
+            await Context.Interaction.DeleteResponseAsync();
         }
 
-        [SlashCommand("leave", "Leave current voice channel.", runMode: RunMode.Async)]
+        [SubSlashCommand("leave", "Leave current voice channel.")]
         public async Task LeaveChannel()
         {
             await DeferAsync(true);
-            await _service.LeaveAudio(Context.Guild);
+            
+            if (Context.Guild == null)
+            {
+                await FollowupAsync(new InteractionMessageProperties
+                {
+                    Content = "This command must be used in a guild.",
+                    Flags = MessageFlags.Ephemeral,
+                });
+                return;
+            }
+            
+            await service.LeaveAudio(Context.Guild);
 
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            await FollowupAsync(new InteractionMessageProperties
+            {
+                Content = "Done!",
+                Flags = MessageFlags.Ephemeral,
+            });
+            
+            await Context.Interaction.DeleteResponseAsync();
         }
 
-        [SlashCommand("stop", "Interrupt the bot and stop playing audio.", runMode: RunMode.Async)]
+        [SubSlashCommand("stop", "Interrupt the bot and stop playing audio.")]
         public async Task Stop()
         {
             await DeferAsync(true);
-            _service.StopAudioAsync(Context.Guild);
+            
+            if (Context.Guild == null)
+            {
+                await FollowupAsync(new InteractionMessageProperties
+                {
+                    Content = "This command must be used in a guild.",
+                    Flags = MessageFlags.Ephemeral,
+                });
+                return;
+            }
+            
+            service.StopAudioAsync(Context.Guild);
 
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            await FollowupAsync(new InteractionMessageProperties
+            {
+                Content = "Done!",
+                Flags = MessageFlags.Ephemeral,
+            });
+            
+            await Context.Interaction.DeleteResponseAsync();
         }
 
-        [SlashCommand("say", "Says something with TTS.", runMode: RunMode.Async)]
+        [SubSlashCommand("say", "Says something with TTS.")]
         public async Task Say(string text)
         {
             await DeferAsync(true);
 
-            var speechTask = Task.Run(async () =>
+            if (Context.Guild == null)
             {
-                string speech = "";
-
-                Uri uriResult;
-                bool textIsUrl = Uri.TryCreate(text, UriKind.Absolute, out uriResult)
-                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-
-                if (textIsUrl)
+                await FollowupAsync(new InteractionMessageProperties
                 {
-                    var resp = await _httpClient.GetAsync(uriResult);
-                    if (resp != null && resp.IsSuccessStatusCode && (resp.Content.Headers.ContentType == null || resp.Content.Headers.ContentType?.MediaType == "text/plain")) // Treat null content type as a plain text response
-                    {
-                        speech = await resp.Content.ReadAsStringAsync();
-                    }
-                }
-                else
-                {
-                    speech = text;
-                }
-
-                var ttsResp = await _httpClient.PostAsJsonAsync("https://t.rnny.xyz/tts", new
-                {
-                    text = speech,
+                    Content = "This command must be used in a guild.",
+                    Flags = MessageFlags.Ephemeral,
                 });
+                return;
+            }
+            
+            string speech = "";
+            bool textIsUrl = Uri.TryCreate(text, UriKind.Absolute, out var uriResult) 
+                             && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
-                if (ttsResp != null && ttsResp.IsSuccessStatusCode)
+            if (textIsUrl)
+            {
+                var resp = await httpClient.GetAsync(uriResult);
+                if (resp.IsSuccessStatusCode && (resp.Content.Headers.ContentType == null || resp.Content.Headers.ContentType?.MediaType == "text/plain")) // Treat null content type as a plain text response
                 {
-                    byte[] ttsRespBytes = await ttsResp.Content.ReadAsByteArrayAsync();
-
-                    if (ttsRespBytes.Length > 0)
-                    {
-                        MemoryStream ms = new MemoryStream(ttsRespBytes);
-
-                        await _service.SendAudioAsync(Context.Guild, Context.Channel, new Audio(ms));
-                    }
+                    speech = await resp.Content.ReadAsStringAsync();
                 }
+            }
+            else
+            {
+                speech = text;
+            }
+
+            var ttsResp = await httpClient.PostAsJsonAsync("https://t.rnny.xyz/tts", new
+            {
+                text = speech,
             });
 
-            await FollowupAsync("Done!", ephemeral: true);
-            await Context.Interaction.DeleteOriginalResponseAsync();
+            if (ttsResp.IsSuccessStatusCode)
+            {
+                byte[] ttsRespBytes = await ttsResp.Content.ReadAsByteArrayAsync();
+
+                if (ttsRespBytes.Length > 0)
+                {
+                    MemoryStream ms = new MemoryStream(ttsRespBytes);
+                    await service.SendAudioAsync(Context.Guild, Context.Channel, new Audio(ms));
+                }
+            }
+
+            await FollowupAsync(new InteractionMessageProperties
+            {
+                Content = "Done!",
+                Flags = MessageFlags.Ephemeral,
+            });
+            await Context.Interaction.DeleteResponseAsync();
         }
 
-        public IVoiceChannel? GetVoiceChannel(IVoiceChannel? channel = null)
+        public async Task<IVoiceGuildChannel?> GetVoiceChannel(IVoiceGuildChannel? channel = null)
         {
             // Get the audio channel
-            return channel ?? (Context.User as IGuildUser)?.VoiceChannel;
+            if (channel != null)
+                return channel;
+            
+            var user = Context.User as GuildUser;
+            if (user == null)
+                return null;
+            
+            var voiceState = await user.GetVoiceStateAsync();
+            var channelId = voiceState.ChannelId;
+            if (channelId == null)
+                return null;
+            
+            return Context.Guild?.Channels[channelId.Value] as IVoiceGuildChannel;
         }
     }
 }

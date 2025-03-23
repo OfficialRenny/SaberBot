@@ -1,6 +1,4 @@
-﻿using Discord;
-using Discord.Commands;
-using Saber.Bot.Core;
+﻿using Saber.Bot.Core;
 using Saber.Common;
 using System;
 using System.Collections.Generic;
@@ -11,35 +9,35 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services.Commands;
+using Saber.Bot.Core.Extensions;
 
 namespace Saber.Bot.Commands.Text
 {
-    public class BasicTextCommandModule : ModuleBase<SocketCommandContext>
+    public class BasicTextCommandModule : MessageCommandModule<CommandContext>
     {
         [Command("id")]
-        [Summary("Fetch either your own or a pinged user's ID")]
-        public Task Id(IUser? user = null)
+        public Task Id(User? user = null)
         {
             user ??= Context.User;
             return ReplyAsync($"{user.Username}'s ID is {user.Id}");
         }
 
         [Command("8ball")]
-        [Summary("Ask the magic 8-ball a question")]
-        public Task EightBall([Remainder] string question)
+        public Task EightBall(string question)
         {
             return ReplyAsync(Helpers.EightBallResponses[Helpers.Random.Next(0, Helpers.EightBallResponses.Length)]);
         }
 
-        [Command("blocky", true)]
-        [Summary("Converts text to blocky text")]
-        public Task BlockyText([Remainder] string textToBlockify)
+        [Command("blocky")]
+        public Task BlockyText(string textToBlockify)
         {
             return ReplyAsync(Helpers.StringToRegionalIndicators(textToBlockify));
         }
 
         [Command("chance")]
-        [Summary("Give it a percentage and the bot will decide whether you suceed or fail.")]
         public Task NumberChance(int i)
         {
             if (i < 1 || i > 100)
@@ -52,7 +50,6 @@ namespace Saber.Bot.Commands.Text
         }
 
         [Command("coinflip")]
-        [Summary("Just a simple coinflip.")]
         public Task Coinflip()
         {
             if (Helpers.Random.NextDouble() < 0.5)
@@ -62,7 +59,6 @@ namespace Saber.Bot.Commands.Text
         }
 
         [Command("ping")]
-        [Summary("Pong, check's the bots latency.")]
         public Task Pong()
         {
             var dt = DateTime.Now;
@@ -74,29 +70,27 @@ namespace Saber.Bot.Commands.Text
         }
 
         [Command("uptime")]
-        [Summary("Check's the bots uptime.")]
         public Task Uptime()
         {
             return ReplyAsync($"I've been up since <t:{(int)(Process.GetCurrentProcess().StartTime.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds}:R>.");
         }
 
-        [Command("poll", true)]
-        [Summary("Create a quick poll with up to 10 options.")]
-        public Task Poll(int o = 0)
+        [Command("poll")]
+        public async Task Poll(int o = 0)
         {
-            IEnumerable<IEmote> m = new List<IEmote>();
+            IEnumerable<ReactionEmojiProperties> m = new List<ReactionEmojiProperties>();
 
             if (o > 0 && o < 10)
-                m = Helpers.NumEmojiArray.Take(o).Select(e => new Emoji(e));
+                m = Helpers.NumEmojiArray.Take(o).Select(e => new ReactionEmojiProperties(e));
             else
-                m = new List<IEmote> { new Emoji("✅"), new Emoji("❎") };
+                m = new List<ReactionEmojiProperties> { new ReactionEmojiProperties("✅"), new ("❎") };
 
-            return Context.Message.AddReactionsAsync(m);
+            foreach (var e in m)
+                await Context.Message.AddReactionAsync(e);
         }
 
         [Command("roll")]
-        [Summary("Rolls dice.")]
-        public Task RollDice([Remainder] string command)
+        public Task RollDice(string command)
         {
             string[] splitCommand = command.ToLower().Split('d');
 

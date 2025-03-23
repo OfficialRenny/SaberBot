@@ -1,26 +1,20 @@
-﻿using Discord.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
-using Discord;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Services.Commands;
+using Saber.Bot.Core.Extensions;
 
 namespace Saber.Bot.Commands.Text
 {
-    public class YoutubeModule : ModuleBase<SocketCommandContext>
+    public class YoutubeModule(YouTubeService service) : MessageCommandModule<CommandContext>
     {
-        private readonly YouTubeService _youTubeService;
-
-        public YoutubeModule(YouTubeService service)
-        {
-            _youTubeService = service;
-        }
-
         [Command("yt")]
-        [Summary("YouTube search")]
         public Task Search(params string[] query)
         {
             var search = string.Join(" ", query);
@@ -29,49 +23,45 @@ namespace Saber.Bot.Commands.Text
         }
 
         [Command("rp2yt")]
-        [Summary("Does a youtube search for whatever you/someone else is currently listening to.")]
-        public Task Rp2Yt(IUser? user = null)
+        public async Task Rp2Yt(User? user = null)
         {
             user ??= Context.User;
 
-            var musicPresences = user.Activities.Where(n => n.Type == ActivityType.Listening).ToList();
-
-            if (musicPresences.Any())
+            var userPresence = Context.Client.Cache.Guilds.SelectMany(x => x.Value.Presences).Where(x => x.Value.User.Id == user.Id).Select(x => x.Value).FirstOrDefault();
+            if (userPresence == null)
+            {
+                await ReplyAsync($"Could not presence status for {user.Username}.");
+                return;
+            }
+            
+            var musicPresences = userPresence.Activities.Where(n => n.Type == UserActivityType.Listening).ToList();
+            if (musicPresences.Count != 0)
             {
                 var cur = musicPresences.First();
-                string songTitle = "";
-                if (cur is SpotifyGame)
-                {
-                    SpotifyGame s = (SpotifyGame)cur;
-                    songTitle = $"{string.Join(", ", s.Artists)} - {s.TrackTitle}";
-                }
-                else
-                {
-                    songTitle = cur.Details;
-                }
+                var songTitle = "";
+                // if (cur is SpotifyGame s)
+                //     songTitle = $"{string.Join(", ", s.Artists)} - {s.TrackTitle}";
+                // else
+                //     songTitle = cur.Details;
+                songTitle = cur.Details;
 
-                return Search(songTitle);
+                await DoSearch(songTitle);
             }
-
-            return Task.CompletedTask;
         }
 
-        public Task Search(string search)
+        public Task DoSearch(string? search)
         {
             if (string.IsNullOrWhiteSpace(search))
-                return Task.CompletedTask;
+                return ReplyAsync("Task failed successfully. (Search was empty.)");
 
-            SearchResource.ListRequest listRequest = _youTubeService.Search.List("snippet");
-            listRequest.MaxResults = 1;
+            SearchResource.ListRequest listRequest = service.Search.List("snippet");
+            listRequest.MaxResults = 3;
             listRequest.Q = search;
             listRequest.Type = "video";
 
             SearchListResponse resp = listRequest.Execute();
 
-            if (resp.Items.Any())
-                return ReplyAsync($"https://youtube.com/watch?v={resp.Items.First().Id.VideoId}");
-            else
-                return Task.CompletedTask;
+            return ReplyAsync(resp.Items.Any() ? $"https://youtube.com/watch?v={resp.Items.First().Id.VideoId}" : "Task failed successfully. (Couldn't find any search results for some reason...)");
         }
     }
 }

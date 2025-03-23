@@ -1,12 +1,14 @@
-﻿using Discord.Interactions;
-using Saber.Bot.Commands.Attributes;
+﻿using Saber.Bot.Commands.Attributes;
 using Saber.Common.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services;
+using NetCord.Services.ApplicationCommands;
 using Saber.Bot.Core.Extensions;
 using Saber.Common;
 using Saber.Common.Services.Interfaces;
@@ -14,14 +16,14 @@ using Saber.Database.Models.Profile;
 
 namespace Saber.Bot.Commands.Interactions
 {
-    [Group("ai", "Generative AI shenanigans")]
-    public class AiModule : InteractionModule<SocketInteractionContext>
+    [SlashCommand("ai", "Generative AI shenanigans")]
+    public class AiModule : InteractionModule<ApplicationCommandContext>
     {
         public required IChatBot ChatBot { get; set; }
         public required IImageGen ImageBot { get; set; }
 
-        [HasAccessFlag(AccessRoles.OpenAiTextGen)]
-        [SlashCommand("chat", "Chat with the bot")]
+        [HasAccessFlag<ApplicationCommandContext>(AccessRoles.OpenAiTextGen)]
+        [SubSlashCommand("chat", "Chat with the bot")]
         public async Task Ask(string question)
         {
             await DeferAsync();
@@ -31,22 +33,22 @@ namespace Saber.Bot.Commands.Interactions
             await FollowupAsyncTooLong(response);
         }
 
-        [HasAccessFlag(AccessRoles.OpenAiTextGen)]
-        [SlashCommand("clear-history", "Wipes ChatGPT's memory of this server and starts a fresh conversation.")]
+        [HasAccessFlag<ApplicationCommandContext>(AccessRoles.OpenAiTextGen)]
+        [SubSlashCommand("clear-history", "Wipes ChatGPT's memory of this server and starts a fresh conversation.")]
         public async Task ClearHistory()
         {
             await DeferAsync();
-
+            
             ChatBot.ClearHistory(Context.Guild.Id);
 
             await FollowupAsync("Chat history cleared.");
         }
 
-        [HasAccessFlag(AccessRoles.OpenAiImageGen)]
-        [SlashCommand("image", "Generate an image")]
+        [HasAccessFlag<ApplicationCommandContext>(AccessRoles.OpenAiImageGen)]
+        [SubSlashCommand("image", "Generate an image")]
         public async Task Image(
             string prompt, 
-            [MaxValue(9)] [MinValue(1)]
+            [SlashCommandParameter(MinValue = 1, MaxValue = 9)]
             int count = 1)
         {
             await DeferAsync();
@@ -86,11 +88,11 @@ namespace Saber.Bot.Commands.Interactions
             {
                 if (noteSent)
                 {
-                    await FollowupWithFilesAsync(chunk.Select(x => new FileAttachment(x.FullName, x.Name)));
+                    await FollowupWithFilesAsync(chunk.Select(x => new AttachmentProperties(x.Name, x.OpenRead())));
                 }
                 else
                 {
-                    await FollowupWithFilesAsync(chunk.Select(x => new FileAttachment(x.FullName, x.Name)), promptText);
+                    await FollowupWithFilesAsync(chunk.Select(x => new AttachmentProperties(x.Name, x.OpenRead())), promptText);
                     noteSent = true;
                 }
             }

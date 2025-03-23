@@ -1,168 +1,163 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using NetCord;
+using NetCord.JsonModels;
+using NetCord.Rest;
+using NetCord.Services.ApplicationCommands;
 using Saber.Bot.Commands.Attributes;
+using Saber.Bot.Core.Extensions;
 using Saber.Common.Services;
-using Saber.Database;
 using Saber.Database.Providers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Saber.Commands.Interactions
+namespace Saber.Bot.Commands.Interactions;
+
+[SlashCommand("inv", "Your SaberBot Inventory")]
+public class InventoryModule(UserProfileProvider userProfileProvider, ItemService itemService)
+    : InteractionModule<ApplicationCommandContext>
 {
-    [Group("inv", "Your SaberBot Inventory")]
-    public class InventoryModule : InteractionModuleBase<SocketInteractionContext>
+    [SubSlashCommand("list", "List all items in your inventory.")]
+    public async Task List()
     {
-        private readonly UserProfileProvider _userProfileProvider;
-        private readonly ItemService _itemService;
+        await DeferAsync();
 
-        public InventoryModule(UserProfileProvider userProfileProvider, ItemService itemService)
-        {
-            _userProfileProvider = userProfileProvider;
-            _itemService = itemService;
-        }
+        var user = userProfileProvider.GetOrCreateProfile(Context.User.Id);
 
-        [SlashCommand("list", "List all items in your inventory.")]
-        public async Task List()
-        {
-            await DeferAsync();
+        var items = itemService.GetOwnedItems(Context.User.Id).ToList();
 
-            var user = _userProfileProvider.GetOrCreateProfile(Context.User.Id);
-
-            var items = _itemService.GetOwnedItems(Context.User.Id).ToList();
-
-            var embed = new EmbedBuilder()
-                .WithThumbnailUrl(Context.User.GetAvatarUrl())
-                .WithTitle($"{Context.User.GlobalName}'s Inventory")
-                .WithColor(Color.Blue)
-                .WithDescription($"You have {items.Count()} items in your inventory.")
-                .AddField("Currency:", user.Inventory.Currency);
-
-            foreach (var item in items)
+        var embed = new EmbedProperties
             {
-                embed.AddField($"{item.Item.Name}", $"{item.Quantity}x Owned", true);
-            }
+                Title = $"{Context.User.GlobalName}'s Inventory",
+                Thumbnail = Context.User.GetAvatarUrl()?.ToString(),
+                Color = new Color(0x0000AA),
+                Description = $"You have {items.Count} items in your inventory.",
+                Fields = new List<EmbedFieldProperties>
+                {
+                    new EmbedFieldProperties { Name = "Currency:", Value = user.Inventory.Currency.ToString() },
+                },
+            };
+        embed.AddFields(items.Select(item => new EmbedFieldProperties
+            { Name = $"{item.Item.Name}", Value = $"{item.Quantity}x Owned", Inline = true }));
+        
+        var shopItems = itemService.GetShopItems();
 
-            var shopItems = _itemService.GetShopItems();
-
-            var storeEmbed = new EmbedBuilder()
-                .WithColor(Color.DarkBlue)
-                .WithTitle("Shop");
-            foreach (var item in shopItems.OrderBy(x => x.Price))
-            {
-                storeEmbed.AddField($"{item.Item.Name}", $"{item.Price} points", true);
-            }
-
-            await FollowupAsync(embeds: new[] { embed.Build(), storeEmbed.Build() });
-        }
-
-        [SlashCommand("give", "Gift a user a Discord Award/Item from your inventory.")]
-        public async Task Give(
-            IUser user,
-            [Summary("Item", "The item you want to gift to the user.")]
-            [Autocomplete(typeof(OwnedItemsAutocompleteHandler))] 
-            string itemId,
-            [Summary("Quantity", "The quantity of the item you want to gift to the user.")]
-            [MinValue(1)]
-            int quantity = 1,
-            bool notifyRecipient = true)
+        var storeEmbed = new EmbedProperties
         {
-            var d = DeferAsync(true);
-            var userProfile = _userProfileProvider.GetOrCreateProfile(Context.User.Id);
+            Title = "Shop",
+            Color = new Color(0x0000AA),
+            Description = "Buy items from the shop.",
+            Fields = shopItems.OrderBy(x => x.Price).Select(x => new EmbedFieldProperties
+            {
+                Name = $"{x.Item.Name}",
+                Value = $"{x.Price} points",
+                Inline = true
+            }).ToArray(),
+        };
+
+        await FollowupAsync(new InteractionMessageProperties
+        {
+            Embeds = new[] { embed, storeEmbed },
+        });
+    }
+
+    [SubSlashCommand("give", "Gift a user a Discord Award/Item from your inventory.")]
+    public async Task Give(
+        User user,
+        [SlashCommandParameter( Name = "item", Description = "The item you want to gift to the user.", AutocompleteProviderType = typeof(ShopItemsAutocompleteHandler))]
+        string itemId,
+        [SlashCommandParameter( Name = "quantity", Description = "The quantity of the item you want to gift to the user.", MinValue = 1 )]
+        int quantity = 1,
+        bool notifyRecipient = true)
+    {
+        var d = DeferAsync(true);
+        var userProfile = userProfileProvider.GetOrCreateProfile(Context.User.Id);
             
-            var baseItem = _itemService.GetItem(itemId);
-            if (baseItem == null)
-            {
-                await d;
-                await FollowupAsync($"That item does not exist.");
-                return;
-            }
-
-            var ownedItem = _itemService.GetOrCreateOwnedItem(userProfile.DiscordId, baseItem.Id);
-            if (ownedItem.Quantity < quantity)
-            {
-                await d;
-                await FollowupAsync($"You don't have enough of this award to gift it.");
-                return;
-            }
-
-            var recipientProfile = _userProfileProvider.GetUserProfile(user.Id);
-            if (recipientProfile == null)
-            {
-                await d;
-                await FollowupAsync($"That is not a valid user.");
-                return;
-            }
-
-            _itemService.ModifyOwnedItem(userProfile.DiscordId, baseItem.Id, (item) => item.Quantity -= quantity);
-            _itemService.ModifyOwnedItem(recipientProfile.DiscordId, baseItem.Id, (item) => item.Quantity += quantity);
-
-            await d;
-            await FollowupAsync($"You have gifted {quantity}x {baseItem.Name} to {user.Username}.");
-
-            if (notifyRecipient)
-            {
-                var embed = new EmbedBuilder()
-                    .WithColor(Color.Green)
-                    .WithTitle("You have received a gift!")
-                    .WithDescription($"You have received {quantity}x {baseItem.Name} from {Context.User.Username}.");
-                if (!string.IsNullOrEmpty(baseItem.ImageUrl))
-                    embed.WithImageUrl(baseItem.ImageUrl);
-
-                await user.SendMessageAsync(embed: embed.Build());
-            }
-        }
-
-        [SlashCommand("buy", "Buy an item from the shop.")]
-        public Task Buy(
-            [Summary("Item", "The item you want to buy from the shop.")]
-            [Autocomplete(typeof(ShopItemsAutocompleteHandler))]
-            string itemId,
-            int quantity = 1)
+        var baseItem = itemService.GetItem(itemId);
+        if (baseItem == null)
         {
-            DeferAsync(true);
-
-            var userProfile = _userProfileProvider.GetOrCreateProfile(Context.User.Id);
-            var item = _itemService.GetShopItem(itemId);
-
-            if (item == null)
-            {
-                FollowupAsync($"That item does not exist.");
-                return Task.CompletedTask;
-            }
-
-            if (!item.IsInfinite && item.Stock < quantity)
-            {
-                FollowupAsync($"There is not enough stock of this item.");
-                return Task.CompletedTask;
-            }
-
-            if (item.Price * quantity > userProfile.Inventory.Currency)
-            {
-                FollowupAsync($"You don't have enough points to buy this item.");
-                return Task.CompletedTask;
-            }
-
-            userProfile.Inventory.Currency -= item.Price * quantity;
-            _userProfileProvider.Save();
-
-            if (!item.IsInfinite)
-            {
-                _itemService.ModifyShopItem(item.Item.Id, item => item.Stock -= quantity);
-            }
-            var ownedItem = _itemService.ModifyOwnedItem(userProfile.DiscordId, item.Item.Id, item => item.Quantity += quantity);
-
-            var embed = new EmbedBuilder()
-                .WithColor(Color.Green)
-                .WithTitle("You have bought an item!")
-                .WithDescription($"You have bought {quantity}x {item.Item.Name} from the shop for {item.Price * quantity} points. You now own {ownedItem.Quantity}x {ownedItem.Item.Name}.");
-            if (!string.IsNullOrEmpty(item.Item.ImageUrl))
-                embed.WithImageUrl(item.Item.ImageUrl);
-
-            return FollowupAsync(embed: embed.Build());
+            await d;
+            await FollowupAsync($"That item does not exist.");
+            return;
         }
+
+        var ownedItem = itemService.GetOrCreateOwnedItem(userProfile.DiscordId, baseItem.Id);
+        if (ownedItem.Quantity < quantity)
+        {
+            await d;
+            await FollowupAsync($"You don't have enough of this award to gift it.");
+            return;
+        }
+
+        var recipientProfile = userProfileProvider.GetUserProfile(user.Id);
+        if (recipientProfile == null)
+        {
+            await d;
+            await FollowupAsync($"That is not a valid user.");
+            return;
+        }
+
+        itemService.ModifyOwnedItem(userProfile.DiscordId, baseItem.Id, (item) => item.Quantity -= quantity);
+        itemService.ModifyOwnedItem(recipientProfile.DiscordId, baseItem.Id, (item) => item.Quantity += quantity);
+
+        await d;
+        await FollowupAsync($"You have gifted {quantity}x {baseItem.Name} to {user.Username}.");
+
+        if (notifyRecipient)
+        {
+            var embed = new EmbedProperties()
+                .WithColor(new Color(0x00EE00))
+                .WithTitle("You have received a gift!")
+                .WithDescription($"You have received {quantity}x {baseItem.Name} from {Context.User.Username}.");
+            if (!string.IsNullOrEmpty(baseItem.ImageUrl))
+                embed.WithImage(baseItem.ImageUrl);
+
+            await (await user.GetDMChannelAsync()).SendMessageAsync(message: new MessageProperties().WithEmbeds([embed]));
+        }
+    }
+
+    [SubSlashCommand("buy", "Buy an item from the shop.")]
+    public async Task Buy(
+        [SlashCommandParameter( Name = "item", Description = "The item you want to buy from the shop.", AutocompleteProviderType = typeof(ShopItemsAutocompleteHandler))]
+        string itemId,
+        [SlashCommandParameter(MinValue = 1)]
+        int quantity = 1)
+    {
+        await DeferAsync(true);
+
+        var userProfile = userProfileProvider.GetOrCreateProfile(Context.User.Id);
+        var item = itemService.GetShopItem(itemId);
+
+        if (item == null)
+        {
+            await FollowupAsync($"That item does not exist.");
+            return;
+        }
+
+        if (!item.IsInfinite && item.Stock < quantity)
+        {
+            await FollowupAsync($"There is not enough stock of this item.");
+            return;
+        }
+
+        if (item.Price * quantity > userProfile.Inventory.Currency)
+        {
+            await FollowupAsync($"You don't have enough points to buy this item.");
+            return;
+        }
+
+        userProfile.Inventory.Currency -= item.Price * quantity;
+        userProfileProvider.Save();
+
+        if (!item.IsInfinite)
+        {
+            itemService.ModifyShopItem(item.Item.Id, item => item.Stock -= quantity);
+        }
+        var ownedItem = itemService.ModifyOwnedItem(userProfile.DiscordId, item.Item.Id, item => item.Quantity += quantity);
+
+        var embed = new EmbedProperties()
+            .WithColor(new Color(0x00EE00))
+            .WithTitle("You have bought an item!")
+            .WithDescription($"You have bought {quantity}x {item.Item.Name} from the shop for {item.Price * quantity} points. You now own {ownedItem.Quantity}x {ownedItem.Item.Name}.");
+        if (!string.IsNullOrEmpty(item.Item.ImageUrl))
+            embed.WithImage(item.Item.ImageUrl);
+
+        await FollowupAsync(new InteractionMessageProperties().WithEmbeds([embed]));
     }
 }
