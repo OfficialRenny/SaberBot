@@ -1,7 +1,6 @@
 using NetCord;
 using NetCord.Gateway;
-using NetCord.JsonModels;
-using NetCord.Rest;
+using Saber.Common.Extensions;
 
 namespace Saber.Bot.Core.Extensions;
 
@@ -9,19 +8,19 @@ public static class MessageExtensions
 {
     public static bool HasStringPrefix(this Message message, string prefix, ref int argPos)
     {
-        if (!message.Content.StartsWith(prefix)) 
+        if (!message.Content.StartsWith(prefix))
             return false;
-        
+
         argPos = prefix.Length;
         return true;
     }
-    
+
     public static bool HasMentionPrefix(this Message message, User user, ref int argPos)
     {
-        if (!message.Content.StartsWith(user.Mention())) 
+        if (!message.Content.StartsWith(user.GetMention()))
             return false;
-        
-        argPos = user.Mention().Length;
+
+        argPos = user.GetMention().Length;
         return true;
     }
 }

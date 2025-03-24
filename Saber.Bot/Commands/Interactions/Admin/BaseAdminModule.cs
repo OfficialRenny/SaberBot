@@ -1,74 +1,79 @@
-﻿using Saber.Bot.Commands.Attributes;
-using Saber.Database;
-using Saber.Database.Providers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NetCord;
+﻿using NetCord;
 using NetCord.Services.ApplicationCommands;
+using Saber.Bot.Commands.Attributes;
 using Saber.Bot.Core.Extensions;
+using Saber.Common;
+using Saber.Common.Extensions;
+using Saber.Common.Services.Interfaces;
+using Saber.Database;
+using Saber.Database.Models.Profile;
+using Saber.Database.Providers;
 
-namespace Saber.Bot.Commands.Interactions.Admin
+namespace Saber.Bot.Commands.Interactions.Admin;
+
+[IsAdmin<ApplicationCommandContext>]
+[SlashCommand("admin", "Admin commands")]
+public class BaseAdminModule(
+    Config config,
+    ILogger logger,
+    Db db)
+    : InteractionModule<ApplicationCommandContext>(config, logger)
 {
-    [IsAdmin<ApplicationCommandContext>]
-    [SlashCommand("admin", "Admin commands")]
-    public class BaseAdminModule(Db db) : InteractionModule<ApplicationCommandContext>
+    private readonly UserProfileProvider _provider = new(db);
+
+    [SubSlashCommand("cleanup", "Clean up the last X messages created by the bot.")]
+    public async Task CleanUp(int messageCount = 15)
     {
-        private readonly UserProfileProvider _provider = new(db);
+        await DeferAsync(true);
 
-        [SubSlashCommand("cleanup", "Clean up the last X messages created by the bot.")]
-        public async Task CleanUp(int messageCount = 15)
-        {
-            await DeferAsync(true);
-            
-            var channelMessages = Context.Channel.GetMessagesAsync();
-            var messages = channelMessages.Where(m => m.Author.Id == Context.Client.Id).OrderByDescending(m => m.CreatedAt).Take(messageCount);
-            
-            List<Task> deleteTasks = new List<Task>();
+        var channelMessages = Context.Channel.GetMessagesAsync();
+        var messages = channelMessages.Where(m => m.Author.Id == Context.Client.Id).OrderByDescending(m => m.CreatedAt)
+            .Take(messageCount);
 
-            await foreach (var message in messages)
-                deleteTasks.Add(Context.Channel.DeleteMessageAsync(message.Id));
+        var deleteTasks = new List<Task>();
 
-            await Task.WhenAll(deleteTasks);
+        await foreach (var message in messages)
+            deleteTasks.Add(Context.Channel.DeleteMessageAsync(message.Id));
 
-            await FollowupAsync($"Done, cleaned {deleteTasks.Count(t => t.IsCompleted)} messages.");
-        }
+        await Task.WhenAll(deleteTasks);
 
-        [SubSlashCommand("toggleadmin", "Toggles admin status for a user.")]
-        public async Task ToggleAdmin(User user)
-        {
-            var d = DeferAsync(true);
+        await FollowupAsync($"Done, cleaned {deleteTasks.Count(t => t.IsCompleted)} messages.");
+    }
 
-            var userProfile = _provider.GetOrCreateProfile(user.Id);
-            _provider.ModifyUserProfile(userProfile, u => u.IsAdmin = !u.IsAdmin);
+    [SubSlashCommand("toggleadmin", "Toggles admin status for a user.")]
+    public async Task ToggleAdmin(User user)
+    {
+        var d = DeferAsync(true);
 
-            await d;
-            await FollowupAsync($"User {user.Username} is now {(userProfile.IsAdmin ? "an admin" : "not an admin")}.");
-        }
+        var userProfile = _provider.GetOrCreateProfile(user.Id);
+        _provider.ModifyUserProfile(userProfile, u => u.IsAdmin = !u.IsAdmin);
 
-        [SubSlashCommand("toggleaccessrole", "Toggles access to a specific role for a user.")]
-        public async Task ToggleAccessRole(User user, Database.Models.Profile.AccessRoles roles)
-        {
-            var d = DeferAsync(true);
+        await d;
+        await FollowupAsync(
+            $"User {user.GetDisplayName()} is now {(userProfile.IsAdmin ? "an admin" : "not an admin")}.");
+    }
 
-            var userProfile = _provider.GetOrCreateProfile(user.Id);
-            _provider.ModifyUserProfile(userProfile, u => u.AccessRoles ^= roles);
+    [SubSlashCommand("toggleaccessrole", "Toggles access to a specific role for a user.")]
+    public async Task ToggleAccessRole(User user, AccessRoles roles)
+    {
+        var d = DeferAsync(true);
 
-            await d;
-            await FollowupAsync($"User {user.Username} now {(userProfile.AccessRoles.HasFlag(roles) ? "has" : "does not have")} access to {roles}.");
-        }
+        var userProfile = _provider.GetOrCreateProfile(user.Id);
+        _provider.ModifyUserProfile(userProfile, u => u.AccessRoles ^= roles);
 
-        [SlashCommand("listaccessroles", "Lists all access roles for a user.")]
-        public async Task ListAccessRoles(User user)
-        {
-            var d = DeferAsync(true);
+        await d;
+        await FollowupAsync(
+            $"User {user.GetDisplayName()} now {(userProfile.AccessRoles.HasFlag(roles) ? "has" : "does not have")} access to {roles}.");
+    }
 
-            var userProfile = _provider.GetOrCreateProfile(user.Id);
+    [SubSlashCommand("listaccessroles", "Lists all access roles for a user.")]
+    public async Task ListAccessRoles(User user)
+    {
+        var d = DeferAsync(true);
 
-            await d;
-            await FollowupAsync($"User {user.Username} has access to {userProfile.AccessRoles}.");
-        }
+        var userProfile = _provider.GetOrCreateProfile(user.Id);
+
+        await d;
+        await FollowupAsync($"User {user.GetDisplayName()} has access to {userProfile.AccessRoles}.");
     }
 }

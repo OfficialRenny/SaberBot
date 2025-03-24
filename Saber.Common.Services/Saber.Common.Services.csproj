@@ -1,43 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>default</LangVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Betalgo.Ranul.OpenAI" Version="9.0.2" />
-    <PackageReference Include="CliWrap" Version="3.8.2" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3707" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.0" />
-    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016" />
-    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00016" />
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="9.0.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
-    <PackageReference Include="NetCord" Version="1.0.0-alpha.352" />
-    <PackageReference Include="NetCord.Hosting.AspNetCore" Version="1.0.0-alpha.352" />
-    <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.352" />
-    <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.352" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NSwag.ApiDescription.Client" Version="14.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="RestSharp" Version="112.1.0" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-    <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
-    <PackageReference Include="YoutubeDLSharp" Version="1.1.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Betalgo.Ranul.OpenAI" Version="9.0.2"/>
+        <PackageReference Include="CliWrap" Version="3.8.2"/>
+        <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3707"/>
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.0"/>
+        <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016"/>
+        <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00016"/>
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="9.0.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3"/>
+        <PackageReference Include="NetCord" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="NetCord.Hosting.AspNetCore" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="NSwag.ApiDescription.Client" Version="14.2.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="RestSharp" Version="112.1.0"/>
+        <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
+        <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1"/>
+        <PackageReference Include="YoutubeDLSharp" Version="1.1.1"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Other\WarframeMarket\src\WarframeMarket\WarframeMarket.csproj" />
-    <ProjectReference Include="..\Saber.Common\Saber.Common.csproj" />
-    <ProjectReference Include="..\Saber.Database\Saber.Database.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Other\WarframeMarket\src\WarframeMarket\WarframeMarket.csproj"/>
+        <ProjectReference Include="..\Saber.Common\Saber.Common.csproj"/>
+        <ProjectReference Include="..\Saber.Database\Saber.Database.csproj"/>
+    </ItemGroup>
 
 </Project>

@@ -1,47 +1,44 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Saber.Common.AppSettings;
-using System.Configuration;
-using System.Dynamic;
 using Microsoft.Extensions.Primitives;
+using Saber.Common.AppSettings;
 
-namespace Saber.Common
+namespace Saber.Common;
+
+public class Config : IConfiguration
 {
-    public class Config : IConfiguration
+    private readonly IConfiguration _config = JsonConfiguration.CreateConfigurationContainer();
+
+    public DirectoryInfo TempDir
     {
-        private readonly IConfiguration _config = JsonConfiguration.CreateConfigurationContainer();
-
-        public IConfigurationSection GetSection(string key)
+        get
         {
-            return _config.GetSection(key);
-        }
+            // get a directory relative to the executable's path, creating it if doesn't exist
+            var tempDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "temp"));
+            if (!tempDir.Exists)
+                tempDir.Create();
 
-        public IEnumerable<IConfigurationSection> GetChildren()
-        {
-            return _config.GetChildren();
+            return tempDir;
         }
+    }
 
-        public IChangeToken GetReloadToken()
-        {
-            return _config.GetReloadToken();
-        }
+    public IConfigurationSection GetSection(string key)
+    {
+        return _config.GetSection(key);
+    }
 
-        public string this[string key]
-        {
-            get => _config[key];
-            set => _config[key] = key;
-        }
+    public IEnumerable<IConfigurationSection> GetChildren()
+    {
+        return _config.GetChildren();
+    }
 
-        public DirectoryInfo TempDir
-        {
-            get
-            {
-                // get a directory relative to the executable's path, creating it if doesn't exist
-                var tempDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "temp"));
-                if (!tempDir.Exists)
-                    tempDir.Create();
+    public IChangeToken GetReloadToken()
+    {
+        return _config.GetReloadToken();
+    }
 
-                return tempDir;
-            }
-        }
+    public string this[string key]
+    {
+        get => _config[key];
+        set => _config[key] = key;
     }
 }

@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Saber.Common;
 
-namespace Saber.Common
+public enum DownloadType
 {
-    public enum DownloadType
-    {
-        Video,
-        Audio,
-        Captions,
-    }
+    Video,
+    Audio,
+    Captions
 }

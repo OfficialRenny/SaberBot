@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Saber.Database.Models.Items
+namespace Saber.Database.Models.Items;
+
+public abstract class Item
 {
-    public abstract class Item
-    {
-        [Key]
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string? ImageUrl { get; set; }
-    }
+    [Key] public Guid Id { get; set; }
 
-    public class DiscordAward : Item { }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
+}
+
+public class DiscordAward : Item
+{
 }

@@ -1,29 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DelegateDecompiler;
 
-namespace Saber.Database.Models.Items
+namespace Saber.Database.Models.Items;
+
+public class ShopItem
 {
-    public class ShopItem
-    {
-        [Key]
-        public Guid Id { get; set; }
-        public int Price { get; set; }
+    [Key] public Guid Id { get; set; }
 
-        public int Stock { get; set; }
-        public bool IsInfinite { get; set; }
+    public int Price { get; set; }
 
-        [NotMapped]
-        [Computed]
-        public bool IsInStock => Stock > 0 || IsInfinite;
+    public int Stock { get; set; }
+    public bool IsInfinite { get; set; }
 
-        [ForeignKey(nameof(Item))]
-        public Guid ItemId { get; set; }
-        public Item Item { get; set; }
-    }
+    [NotMapped] [Computed] public bool IsInStock => Stock > 0 || IsInfinite;
+
+    [ForeignKey(nameof(Item))] public Guid ItemId { get; set; }
+
+    public Item Item { get; set; }
 }

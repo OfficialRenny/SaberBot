@@ -1,26 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Saber.Common;
 
-namespace Saber.Database
+namespace Saber.Database;
+
+public class DbFactory : IDesignTimeDbContextFactory<Db>, IDbContextFactory<Db>
 {
-    public class DbFactory : IDesignTimeDbContextFactory<Db>, IDbContextFactory<Db>
+    public Db CreateDbContext()
     {
-        public Db CreateDbContext(string[] args)
-            => CreateDbContext();
+        var config = new Config();
 
-        public Db CreateDbContext()
-        {
-            var config = new Common.Config();
+        var optionsBuilder = new DbContextOptionsBuilder<Db>();
+        optionsBuilder.UseSqlServer(config["Database:ConnectionString"]);
 
-            var optionsBuilder = new DbContextOptionsBuilder<Db>();
-            optionsBuilder.UseSqlServer(config["Database:ConnectionString"]);
+        return new Db(optionsBuilder.Options);
+    }
 
-            return new Db(optionsBuilder.Options);
-        }
+    public Db CreateDbContext(string[] args)
+    {
+        return CreateDbContext();
     }
 }

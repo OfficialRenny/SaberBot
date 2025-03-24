@@ -1,39 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>Saber.Bot</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsPublishable>True</IsPublishable>
-    <LangVersion>default</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Include="..\lib\libsodium.dll" Link="libsodium.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lib\opus.dll" Link="opus.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Betalgo.Ranul.OpenAI" Version="9.0.2" />
-    <PackageReference Include="CliWrap" Version="3.8.2" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3707" />
-    <PackageReference Include="NetCord" Version="1.0.0-alpha.352" />
-    <PackageReference Include="NetCord.Hosting.AspNetCore" Version="1.0.0-alpha.352" />
-    <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.352" />
-    <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.352" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="RestSharp" Version="112.1.0" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-    <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
-    <PackageReference Include="YoutubeDLSharp" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Saber.Common.Services\Saber.Common.Services.csproj" />
-    <ProjectReference Include="..\Saber.Common\Saber.Common.csproj" />
-    <ProjectReference Include="..\Saber.Database\Saber.Database.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>Saber.Bot</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPublishable>True</IsPublishable>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Betalgo.Ranul.OpenAI" Version="9.0.2"/>
+        <PackageReference Include="CliWrap" Version="3.8.2"/>
+        <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3707"/>
+        <PackageReference Include="NetCord" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="NetCord.Hosting.AspNetCore" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.352"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="RestSharp" Version="112.1.0"/>
+        <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
+        <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1"/>
+        <PackageReference Include="YoutubeDLSharp" Version="1.1.1"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Saber.Common.Services\Saber.Common.Services.csproj"/>
+        <ProjectReference Include="..\Saber.Common\Saber.Common.csproj"/>
+        <ProjectReference Include="..\Saber.Database\Saber.Database.csproj"/>
+    </ItemGroup>
 </Project>

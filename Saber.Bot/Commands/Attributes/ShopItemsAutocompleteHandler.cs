@@ -1,27 +1,26 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Saber.Common.Services;
-using Saber.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NetCord;
+﻿using NetCord;
 using NetCord.Rest;
-using NetCord.Services;
 using NetCord.Services.ApplicationCommands;
+using Saber.Common.Services;
 
-namespace Saber.Bot.Commands.Attributes
+namespace Saber.Bot.Commands.Attributes;
+
+public class ShopItemsAutocompleteHandler(ItemService itemService)
+    : IAutocompleteProvider<AutocompleteInteractionContext>
 {
-    public class ShopItemsAutocompleteHandler(ItemService itemService) : IAutocompleteProvider<AutocompleteInteractionContext>
+    public async ValueTask<IEnumerable<ApplicationCommandOptionChoiceProperties>?> GetChoicesAsync(
+        ApplicationCommandInteractionDataOption option, AutocompleteInteractionContext context)
     {
-        public async ValueTask<IEnumerable<ApplicationCommandOptionChoiceProperties>?> GetChoicesAsync(ApplicationCommandInteractionDataOption option, AutocompleteInteractionContext context)
-        {
-            var shopItems = itemService.GetShopItems();
+        var shopItems = itemService.GetShopItems();
 
-            IEnumerable<ApplicationCommandOptionChoiceProperties> suggestions = shopItems.Select(x => new ApplicationCommandOptionChoiceProperties($"{x.Item.Name} - {x.Price}c", x.Id.ToString())).ToList();
+        IEnumerable<ApplicationCommandOptionChoiceProperties> suggestions =
+            shopItems
+                .Where(x => option.Value == null ||
+                            x.Item.Name.Contains(option.Value, StringComparison.OrdinalIgnoreCase))
+                .Select(x =>
+                    new ApplicationCommandOptionChoiceProperties($"{x.Item.Name} - {x.Price}c", x.Id.ToString()))
+                .ToList();
 
-            return suggestions.Any() ? suggestions.Take(25) : [];
-        }
+        return suggestions.Any() ? suggestions.Take(25) : [];
     }
 }
