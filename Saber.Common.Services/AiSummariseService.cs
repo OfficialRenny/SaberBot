@@ -3,30 +3,24 @@ using Betalgo.Ranul.OpenAI.Interfaces;
 using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
 using HtmlAgilityPack;
 using NetCord.Gateway;
+using OpenQA.Selenium.Firefox;
 using Saber.Common.Services.Interfaces;
 using OpenAIModels = Betalgo.Ranul.OpenAI.ObjectModels.Models;
 
 
 namespace Saber.Common.Services;
 
-public class AiSummariseService : ISummaryService
+public class AiSummariseService(
+    IOpenAIService service,
+    ILogger logger,
+    HttpClient httpClient,
+    YoutubeDlService youtubeDl,
+    FirefoxDriverService firefoxDriverService)
+    : ISummaryService
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger _logger;
-    private readonly IOpenAIService _service;
-    private readonly YoutubeDlService _youtubeDl;
-
     private readonly Regex _youtubeVideoRegex =
         new(
             @"^(?:(?:https|http):\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be).*(?<=\/|v\/|u\/|embed\/|shorts\/|watch\?v=)(?<!\/user\/)(?<id>[\w\-]{11})(?=\?|&|$)");
-
-    public AiSummariseService(IOpenAIService service, ILogger logger, HttpClient httpClient, YoutubeDlService youtubeDl)
-    {
-        _service = service;
-        _logger = logger;
-        _httpClient = httpClient;
-        _youtubeDl = youtubeDl;
-    }
 
     public async Task<string> Summarize(string url, int? length = null)
     {
@@ -35,7 +29,7 @@ public class AiSummariseService : ISummaryService
             if (GetYoutubeVideoId(url) is string videoId)
             {
                 var videoUrl = $"https://www.youtube.com/watch?v={videoId}";
-                var videoContent = await _youtubeDl.DownloadCaptions(videoUrl);
+                var videoContent = await youtubeDl.DownloadCaptions(videoUrl);
                 if (string.IsNullOrWhiteSpace(videoContent))
                     return "Could not fetch the video's captions.";
 
@@ -57,7 +51,7 @@ public class AiSummariseService : ISummaryService
         }
         catch (Exception e)
         {
-            await _logger.LogAsync(LogSeverity.Error, nameof(Summarize), e.Message, e);
+            await logger.LogAsync(LogSeverity.Error, nameof(Summarize), e.Message, e);
             return "Could not summarize the link.";
         }
     }
@@ -66,14 +60,30 @@ public class AiSummariseService : ISummaryService
     {
         try
         {
-            var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            var responseBody = await response.Content.ReadAsStringAsync();
-            return responseBody;
+            var response = await httpClient.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                return responseBody;
+            }
+
+            var opts = new FirefoxOptions
+            {
+                LogLevel = FirefoxDriverLogLevel.Warn,
+                AcceptInsecureCertificates = true
+            };
+            opts.AddArgument("--headless");
+            using var webDriver = new FirefoxDriver(firefoxDriverService, opts);
+
+            await webDriver.Navigate().GoToUrlAsync(url);
+            var pageSource = webDriver.PageSource;
+            webDriver.Quit();
+
+            return pageSource;
         }
         catch (Exception e)
         {
-            await _logger.LogAsync(LogSeverity.Error, nameof(FetchPageContent), e.Message, e);
+            await logger.LogAsync(LogSeverity.Error, nameof(FetchPageContent), e.Message, e);
             return string.Empty;
         }
     }
@@ -105,15 +115,16 @@ public class AiSummariseService : ISummaryService
     public async Task<string> AiSummarise(string content, int? length = null, bool isVideo = false)
     {
         var prompt =
-            $"Summarise the following ${(isVideo ? "transcript" : "text")}, you must only use a maximum of {length ?? 7} paragraphs/points. " +
-            $"Respond with only the summarised text, Markdown formatting is permitted to separate or highlight key points if required, but keep it as compact as possible. " +
+            $"Summarise the following ${(isVideo ? "transcript" : "text")}. " +
+            $"{(length != null ? $"You must only use a maximum of {length} paragraphs/points. " : "")}" +
+            $"Respond with only the summarised text, Markdown formatting is permitted to separate or highlight key points if required, but keep it as succinct as possible. " +
             $"Translate to English if the text is not already in English. " +
             $"Keep your response to fewer than 1500 characters:\n\n" +
             $"{content}";
 
         var chat = ChatMessage.FromSystem(prompt);
 
-        var response = _service.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
+        var response = service.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
         {
             Messages = new List<ChatMessage> { chat },
             User = "SaberBot",

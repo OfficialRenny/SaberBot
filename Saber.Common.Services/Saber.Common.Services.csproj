@@ -29,6 +29,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="RestSharp" Version="112.1.0"/>
+        <PackageReference Include="Selenium.WebDriver" Version="4.30.0"/>
         <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
         <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1"/>
         <PackageReference Include="YoutubeDLSharp" Version="1.1.1"/>

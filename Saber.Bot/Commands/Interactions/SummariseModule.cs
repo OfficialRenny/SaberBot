@@ -51,9 +51,9 @@ public class SummariseInteractionModule(
     public async Task Summarise(
         [SlashCommandParameter(Name = "url", Description = "Article URL")]
         string url,
-        [SlashCommandParameter(Name = "paragraphs", Description = "Number of paragraphs to fetch.", MinValue = 1,
+        [SlashCommandParameter(Name = "paragraphs", Description = "Number of paragraphs to fetch.",
             MaxValue = 15)]
-        int length = 7)
+        int? length = null)
     {
         Uri.TryCreate(url, UriKind.Absolute, out var uri);
 
@@ -65,7 +65,8 @@ public class SummariseInteractionModule(
 
         await DeferAsync();
 
-        length = Math.Clamp(length, 1, 15);
+        if (length != null)
+            length = Math.Clamp(length.Value, 1, 15);
 
         var resp = await service.Summarize(url, length);
 

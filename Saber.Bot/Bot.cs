@@ -11,6 +11,9 @@ using NetCord.Hosting.Gateway;
 using NetCord.Hosting.Services;
 using NetCord.Services.ApplicationCommands;
 using NetCord.Services.Commands;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Firefox;
 using Saber.Common;
 using Saber.Common.Services;
 using Saber.Common.Services.Interfaces;
@@ -63,7 +66,8 @@ builder.Services
     .AddSingleton<FileUploaderService>()
     //.AddSingleton<OneLinerService>()
     .AddSingleton<WarframeService>()
-    .AddTransient<ItemService>();
+    .AddTransient<ItemService>()
+    .AddSingleton(FirefoxDriverService.CreateDefaultService());
 
 builder.Services.AddOpenAIService(s => { s.ApiKey = config["OpenAI:ApiKey"]; });
 
