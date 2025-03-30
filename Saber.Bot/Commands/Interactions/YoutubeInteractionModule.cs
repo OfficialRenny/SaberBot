@@ -33,55 +33,18 @@ public class YoutubeInteractionModule(
 
         await DoSearch(searchTerm);
     }
-
-    [SlashCommand("rp2yt", "Does a youtube search for whatever you/someone else is currently listening to.")]
-    public async Task Rp2Yt(User? user = null)
-    {
-        await DeferAsync();
-
-        user ??= Context.User;
-
-        var userPresence = Context.Client.Cache.Guilds.SelectMany(x => x.Value.Presences)
-            .Where(x => x.Value.User.Id == user.Id).Select(x => x.Value).FirstOrDefault();
-        if (userPresence == null)
-        {
-            await FollowupAsync($"Could not presence status for {user.GetDisplayName()}.");
-            return;
-        }
-
-        var musicPresences = userPresence.Activities.Where(n => n.Type == UserActivityType.Listening).ToList();
-        if (musicPresences.Count == 0)
-        {
-            await FollowupAsync($"{user.GetDisplayName()} is not listening to anything.");
-            return;
-        }
-
-        var cur = musicPresences.First();
-        var songTitle = "";
-        // if (cur is SpotifyGame s)
-        //     songTitle = $"{string.Join(", ", s.Artists)} - {s.TrackTitle}";
-        // else
-        //     songTitle = cur.Details;
-        songTitle = $"{cur.Details} - {cur.State}";
-
-        await DoSearch(songTitle);
-    }
-
-    public Task DoSearch(string? search)
+    
+    public async Task DoSearch(string? search)
     {
         if (string.IsNullOrWhiteSpace(search))
-            return FollowupAsync("Task failed successfully. (Search was empty.)");
+        {
+            await FollowupAsync("Task failed successfully. (Search was empty.)");
+            return;
+        }
 
-        var listRequest = service.Search.List("snippet");
-        listRequest.MaxResults = 3;
-        listRequest.Q = search;
-        listRequest.Type = "video";
+        var resp = await service.GetSearch(search);
 
-        var resp = listRequest.Execute();
-
-        return FollowupAsync(resp.Items.Any()
-            ? $"https://youtube.com/watch?v={resp.Items.First().Id.VideoId}"
-            : "Task failed successfully. (Couldn't find any search results for some reason...)");
+        await FollowupAsync(resp ?? "Task failed successfully. (Couldn't find any search results for some reason...)");
     }
 
     [HasAccessFlag<ApplicationCommandContext>(AccessRoles.YoutubeDl)]

@@ -67,6 +67,7 @@ builder.Services
     //.AddSingleton<OneLinerService>()
     .AddSingleton<WarframeService>()
     .AddTransient<ItemService>()
+    .AddSingleton<RichPresenceListeningTrackingService>()
     .AddSingleton(FirefoxDriverService.CreateDefaultService());
 
 builder.Services.AddOpenAIService(s => { s.ApiKey = config["OpenAI:ApiKey"]; });
